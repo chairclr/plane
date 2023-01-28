@@ -3,9 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33312.197
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "plane", "plane\plane.csproj", "{DC6E8283-5A50-4A52-A5C8-56070A10AFA5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "plane", "plane\plane.csproj", "{DC6E8283-5A50-4A52-A5C8-56070A10AFA5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlaneTestProject", "PlaneTestProject\PlaneTestProject.csproj", "{FD1DBF07-D816-4F51-BA47-4D014E2ADC2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlaneTestProject", "PlaneTestProject\PlaneTestProject.csproj", "{FD1DBF07-D816-4F51-BA47-4D014E2ADC2E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2CE84760-D8F3-4DBD-BBFD-F52C2E9EC622}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
