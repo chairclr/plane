@@ -1,14 +1,20 @@
+name: GitHub Actions Demo
+run-name: ${{ github.actor }} is very smart
 on: [push]
-steps:
-- uses: actions/checkout@v2
+jobs:
+  Code-Analysis:
+    runs-on: ubuntu-latest
 
-# Run NuGet restore for each project/solution to analyze
-- name: Run NuGet restore
-  run: dotnet restore plane.sln
+    steps:
+    - uses: actions/checkout@v2
 
-# Run code analysis for all projects/solutions, such that code analysis violations break the build.
-- name: Run .NET Code Analysis
-  uses: dotnet/code-analysis@v1
-  id: code-analysis
-  with:
-    build-breaking: true
+    # Run NuGet restore for each project/solution to analyze
+    - name: Run NuGet restore
+      run: dotnet restore plane.sln
+
+    # Run code analysis for all projects/solutions, such that code analysis violations break the build.
+    - name: Run .NET Code Analysis
+      uses: dotnet/code-analysis@v1
+      id: code-analysis
+      with:
+        build-breaking: true
