@@ -1,7 +1,13 @@
+steps:
+- uses: actions/checkout@v2
+
+# Run NuGet restore for each project/solution to analyze
+- name: Run NuGet restore
+  run: dotnet restore plane.sln
+
+# Run code analysis for all projects/solutions, such that code analysis violations break the build.
 - name: Run .NET Code Analysis
   uses: dotnet/code-analysis@v1
   id: code-analysis
   with:
-    solution: plane.sln
     build-breaking: true
-    all-categories: all
