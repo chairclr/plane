@@ -46,7 +46,7 @@ public class Plane : IDisposable
     {
         Renderer ??= new Renderer(Window);
 
-        Renderer.Render(); // Currently does nothing
+        Renderer.Render();
 
         //Console.WriteLine($"Render | FPS: {(1 / deltaTime):F2}");
     }

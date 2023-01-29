@@ -37,6 +37,8 @@ public unsafe class Renderer : IDisposable
 
     private PixelShader? PixelShader;
 
+    private ComPtr<ID3D11SamplerState> PixelShaderSampler = default;
+
     public Renderer(IWindow window)
     {
         CreateDeviceAndSwapChain(window);
@@ -66,13 +68,63 @@ public unsafe class Renderer : IDisposable
         VertexShader = ShaderCompiler.CompileFromFile<VertexShader>(Path.Combine(planeRootFolder, "Shaders/VertexShader.hlsl"), "VSMain", ShaderModel.VertexShader5_0);
         VertexShader.Create(this);
 
+        InputElementDesc[] vertexLayout =
+        {
+            new InputElementDesc((byte*)SilkMarshal.StringToPtr("POSITION"), 0, Format.FormatR32G32B32Float, 0, 0,                          InputClassification.PerVertexData),
+            new InputElementDesc((byte*)SilkMarshal.StringToPtr("TEXCOORD"), 0, Format.FormatR32G32Float,    0, D3D11.AppendAlignedElement, InputClassification.PerVertexData),
+            new InputElementDesc((byte*)SilkMarshal.StringToPtr("NORMAL"),   0, Format.FormatR32G32B32Float, 0, D3D11.AppendAlignedElement, InputClassification.PerVertexData),
+        };
+
+        VertexShader.SetInputLayout(this, vertexLayout);
+
         PixelShader = ShaderCompiler.CompileFromFile<PixelShader>(Path.Combine(planeRootFolder, "Shaders/PixelShader.hlsl"), "PSMain", ShaderModel.PixelShader5_0);
         PixelShader.Create(this);
+
+        SamplerDesc sampDesc = new SamplerDesc()
+        {
+            Filter = Filter.ComparisonMinMagMipLinear,
+            AddressU = TextureAddressMode.Wrap,
+            AddressV = TextureAddressMode.Wrap,
+            AddressW = TextureAddressMode.Wrap,
+            ComparisonFunc = ComparisonFunc.Never,
+            MinLOD = 0,
+            MaxLOD = float.MaxValue,
+        };
+
+        SilkMarshal.ThrowHResult(Device.Get().CreateSamplerState(ref sampDesc, PixelShaderSampler.GetAddressOf()));
     }
 
     public void Render()
     {
-        // Do Rendering Things
+        ref ID3D11DeviceContext context = ref Context.Get();
+
+        context.OMSetRenderTargets(1, RenderTargetView.GetAddressOf(), DepthStencilView);
+        context.OMSetDepthStencilState(DepthStencilState, 0);
+
+        float[] clearColor = new float[]{ 0f, 1f, 0f, 1f };
+        context.ClearRenderTargetView(RenderTargetView, ref clearColor[0]);
+        context.ClearDepthStencilView(DepthStencilView, (uint)(ClearFlag.Depth | ClearFlag.Stencil), 1.0f, 0);
+
+        context.IASetInputLayout(VertexShader!.NativeInputLayout);
+        context.IASetPrimitiveTopology(D3DPrimitiveTopology.D3D10PrimitiveTopologyTrianglelist);
+
+
+        context.RSSetState(Rasterizer!.RasterizerState);
+        context.RSSetViewports(1, ref Viewport);
+
+
+        context.PSSetSamplers(0, 1, PixelShaderSampler.GetAddressOf());
+
+        context.VSSetShader(ref VertexShader!.NativeShader.Get(), null, 0);
+        context.PSSetShader(ref PixelShader!.NativeShader.Get(), null, 0);
+        context.GSSetShader(null, null, 0);
+
+        //foreach (RenderObject obj in RenderObjects)
+        //{
+        //    obj.Render(Camera);
+        //}
+
+        SwapChain.Get().Present(1, 0);
     }
 
     private void CreateDeviceAndSwapChain(IWindow window)
