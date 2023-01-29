@@ -27,6 +27,10 @@ public unsafe class Renderer : IDisposable
 
     private Viewport Viewport = default;
 
+    private Rasterizer? Rasterizer;
+
+    // TODO: Implement blend state
+
     public Renderer(IWindow window)
     {
         CreateDeviceAndSwapChain(window);
@@ -40,6 +44,16 @@ public unsafe class Renderer : IDisposable
         CreateDepthBuffer(window);
 
         CreateViewport(window);
+
+        RasterizerDesc rasterizerDesc = new RasterizerDesc()
+        {
+            MultisampleEnable = 1,
+            AntialiasedLineEnable = 1,
+            FillMode = FillMode.Solid,
+            CullMode = CullMode.Back,
+        };
+
+        Rasterizer = new Rasterizer(this, rasterizerDesc);
     }
 
     public void Render()
