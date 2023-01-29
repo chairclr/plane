@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using plane.Diagnostics;
 using plane.Graphics.Direct3D11;
+using plane.Graphics.Shaders;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
 using Silk.NET.DXGI;
@@ -32,6 +33,10 @@ public unsafe class Renderer : IDisposable
 
     // TODO: Implement blend state and alpha blending
 
+    private VertexShader? VertexShader;
+
+    private PixelShader? PixelShader;
+
     public Renderer(IWindow window)
     {
         CreateDeviceAndSwapChain(window);
@@ -55,6 +60,14 @@ public unsafe class Renderer : IDisposable
         };
 
         Rasterizer = new Rasterizer(this, rasterizerDesc);
+
+        string planeRootFolder = Path.GetDirectoryName(typeof(Plane).Assembly.Location)!;
+
+        VertexShader = ShaderCompiler.CompileFromFile<VertexShader>(Path.Combine(planeRootFolder, "Shaders/VertexShader.hlsl"), "VSMain", ShaderModel.VertexShader5_0);
+        VertexShader.Create(this);
+
+        PixelShader = ShaderCompiler.CompileFromFile<PixelShader>(Path.Combine(planeRootFolder, "Shaders/PixelShader.hlsl"), "PSMain", ShaderModel.PixelShader5_0);
+        PixelShader.Create(this);
     }
 
     public void Render()

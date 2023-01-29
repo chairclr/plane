@@ -16,4 +16,20 @@
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Shaders\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Shaders\Common.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Shaders\PixelShader.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Shaders\VertexShader.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
