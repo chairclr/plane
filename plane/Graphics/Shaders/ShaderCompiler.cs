@@ -24,7 +24,7 @@ public class ShaderCompiler
 
 #endif
 
-        int hr = D3DCompilerProvider.D3DCompiler.Value.Compile((void*)SilkMarshal.StringToPtr(src), (nuint)src.Length, (string)null, null, null, entryPoint, shaderModel, flags, 0, shader.ShaderData.GetAddressOf(), shaderErrors.GetAddressOf());
+        int hr = D3DCompilerProvider.D3DCompiler.Value.Compile((void*)SilkMarshal.StringToPtr(src), (nuint)src.Length, (string?)null, null, null, entryPoint, shaderModel, flags, 0, shader.ShaderData.GetAddressOf(), shaderErrors.GetAddressOf());
 
         if (HResult.IndicatesFailure(hr))
         {
