@@ -4,7 +4,7 @@ using Silk.NET.Direct3D11;
 
 namespace plane.Graphics.Shaders;
 
-public class VertexShader : Shader
+public class VertexShader : Shader, IDisposable
 {
     internal ComPtr<ID3D11VertexShader> NativeShader = default;
     internal ComPtr<ID3D11InputLayout> NativeInputLayout = default;
@@ -20,5 +20,12 @@ public class VertexShader : Shader
         {
             SilkMarshal.ThrowHResult(renderer.Device.Get().CreateInputLayout(layoutPtr, (uint)inputLayout.Length, ShaderData.Get().GetBufferPointer(), ShaderData.Get().GetBufferSize(), NativeInputLayout.GetAddressOf()));
         }
+    }
+
+    public new void Dispose()
+    {
+        GC.SuppressFinalize(this);
+
+        NativeShader.Dispose();
     }
 }

@@ -2,9 +2,16 @@
 
 namespace plane.Graphics.Shaders;
 
-public abstract class Shader
+public abstract class Shader : IDisposable
 {
     internal ComPtr<ID3D10Blob> ShaderData = default;
 
     internal abstract void Create(Renderer renderer);
+
+    public virtual void Dispose()
+    {
+        GC.SuppressFinalize(this);
+
+        ShaderData.Dispose();
+    }
 }
