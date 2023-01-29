@@ -28,7 +28,11 @@ public class ShaderCompiler
                 byte* stringPointer = (byte*)shaderErrors.Get().GetBufferPointer();
                 int stringLength = (int)shaderErrors.Get().GetBufferSize();
 
-                throw new Exception($"Failed to compile shader.\n'{Encoding.UTF8.GetString(stringPointer, stringLength)}'");
+                string compilerErrors = Encoding.UTF8.GetString(stringPointer, stringLength);
+
+                shaderErrors.Dispose();
+
+                throw new Exception($"Failed to compile shader.\n'{compilerErrors}'");
             }
             else
             {

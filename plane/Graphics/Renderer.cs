@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using plane.Diagnostics;
 using plane.Graphics.Direct3D11;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
@@ -84,7 +85,7 @@ public unsafe class Renderer : IDisposable
 
         if (debug)
         {
-            Device.SetInfoQueueCallback((Message message) => Console.WriteLine(SilkMarshal.PtrToString((nint)message.PDescription)));
+            Device.SetInfoQueueCallback((Direct3D11Message message) => Logger.Log.WriteLine(message.Description ?? "", message.LogSeverity, DateTime.Now));
         }
 
         SwapChainDesc1 swapChainDesc = new SwapChainDesc1()
