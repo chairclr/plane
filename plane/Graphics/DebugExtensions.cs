@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using Silk.NET.Core.Native;
-using Silk.NET.Direct3D.Compilers;
 using Silk.NET.Direct3D11;
 
 namespace plane.Graphics;
@@ -22,7 +16,7 @@ public static class DebugExtensions
         SilkMarshal.ThrowHResult(device.Get().QueryInterface(ref SilkMarshal.GuidOf<ID3D11InfoQueue>(), (void**)infoQueue.GetAddressOf()));
 
         return Task.Run
-        (   
+        (
             () =>
             {
                 while (!cancellationToken.IsCancellationRequested)

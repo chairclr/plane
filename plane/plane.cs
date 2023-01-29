@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
 using plane.Graphics;
-using Silk.NET.Core.Native;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
@@ -65,7 +59,7 @@ public class Plane : IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        
+
         Window.Dispose();
     }
 }
