@@ -4,9 +4,10 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using plane.Graphics;
+using Silk.NET.Core.Native;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
-using Silk.NET.Windowing.Sdl;
 
 namespace plane;
 
@@ -18,8 +19,6 @@ public class Plane : IDisposable
 
     public Plane(string windowName)
     {
-        SdlWindowing.Use();
-
         Window = Silk.NET.Windowing.Window.Create(new WindowOptions()
         {
             Size = new Vector2(1280, 720).ToGeneric().As<int>(),
@@ -55,18 +54,18 @@ public class Plane : IDisposable
 
         Renderer.Render(); // Currently does nothing
 
-        Console.WriteLine($"Render | FPS: {(1 / deltaTime):F2}");
+        //Console.WriteLine($"Render | FPS: {(1 / deltaTime):F2}");
     }
 
     private void Update(double deltaTime)
     {
-        Console.WriteLine($"Update | UPS: {(1 / deltaTime):F2}");
+        //Console.WriteLine($"Update | UPS: {(1 / deltaTime):F2}");
     }
 
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-
+        
         Window.Dispose();
     }
 }

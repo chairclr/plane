@@ -1,5 +1,4 @@
 ﻿using plane;
-using Silk.NET.SDL;
 
 namespace PlaneTestProject;
 
