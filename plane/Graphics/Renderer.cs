@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using plane.Graphics.Direct3D11;
-using plane.Graphics.Shaders;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
 using Silk.NET.DXGI;
@@ -30,7 +29,7 @@ public unsafe class Renderer : IDisposable
 
     private Rasterizer? Rasterizer;
 
-    // TODO: Implement blend state
+    // TODO: Implement blend state and alpha blending
 
     public Renderer(IWindow window)
     {
