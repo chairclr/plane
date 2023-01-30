@@ -156,7 +156,7 @@ public unsafe class Renderer : IDisposable
         SwapChainDesc1 swapChainDesc = new SwapChainDesc1()
         {
             BufferCount = 2,
-            Format = Format.FormatB8G8R8A8Unorm,
+            Format = Format.FormatR8G8B8A8Unorm,
             BufferUsage = DXGI.UsageRenderTargetOutput,
             SwapEffect = SwapEffect.FlipDiscard,
             SampleDesc = new SampleDesc(1, 0),
