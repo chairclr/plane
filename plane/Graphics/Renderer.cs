@@ -170,8 +170,8 @@ public unsafe class Renderer : IDisposable
         context.PSSetShader(ref PixelShader!.NativeShader.Get(), null, 0);
         context.GSSetShader(null, null, 0);
 
-        VertexShaderData.ViewProjection = Matrix4x4.CreateLookAt(new Vector3(0f, 0f, -20 * MathF.Cos(s)), new Vector3(0f, 0f, -20f * MathF.Cos(s)) + Vector3.UnitZ, Vector3.UnitY) * Matrix4x4.CreatePerspectiveFieldOfView(1.39626f, 1280f/720f, 0.1f, 1000f);
-        VertexShaderData.World = Matrix4x4.CreateTranslation(0f, 0f, -20 * MathF.Cos(s));
+        VertexShaderData.ViewProjection = Matrix4x4.CreateLookAt(new Vector3(0f, 0f, -2 * MathF.Cos(s)), new Vector3(0f, 0f, -2f * MathF.Cos(s)) + Vector3.UnitZ, Vector3.UnitY) * Matrix4x4.CreatePerspectiveFieldOfView(1.39626f, 1280f/720f, 0.1f, 1000f);
+        VertexShaderData.World = Matrix4x4.CreateTranslation(0f, 0f, -2 * MathF.Cos(s));
         VertexShaderDataBuffer.WriteData(this, ref VertexShaderData);
 
         context.VSSetConstantBuffers(0, 1, VertexShaderDataBuffer.DataBuffer.GetAddressOf());
