@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Numerics;
 using plane.Diagnostics;
 using plane.Graphics.Direct3D11;
 using plane.Graphics.Shaders;
@@ -38,6 +39,12 @@ public unsafe class Renderer : IDisposable
     private PixelShader? PixelShader;
 
     private ComPtr<ID3D11SamplerState> PixelShaderSampler = default;
+
+    public VertexShaderBuffer VertexShaderData;
+
+    public Buffer<VertexShaderBuffer> VertexShaderDataBuffer;
+
+    private Mesh CubeMesh;
 
     public Renderer(IWindow window)
     {
@@ -82,7 +89,7 @@ public unsafe class Renderer : IDisposable
 
         SamplerDesc sampDesc = new SamplerDesc()
         {
-            Filter = Filter.ComparisonMinMagMipLinear,
+            Filter = Filter.MinMagMipLinear,
             AddressU = TextureAddressMode.Wrap,
             AddressV = TextureAddressMode.Wrap,
             AddressW = TextureAddressMode.Wrap,
@@ -92,7 +99,51 @@ public unsafe class Renderer : IDisposable
         };
 
         SilkMarshal.ThrowHResult(Device.Get().CreateSamplerState(ref sampDesc, PixelShaderSampler.GetAddressOf()));
+
+        VertexShaderDataBuffer = new Buffer<VertexShaderBuffer>(this, ref VertexShaderData, BindFlag.ConstantBuffer, usage: Usage.Dynamic, cpuAccessFlags: CpuAccessFlag.Write);
+
+        List<Vertex> vertices = new List<Vertex>()
+        {
+            new Vertex(new Vector3(-0.5f, -0.5f,  0.5f), new Vector2(0.0f, 0.0f), new Vector3(0f, 0f, -1f)),
+            new Vertex(new Vector3( 0.5f, -0.5f,  0.5f), new Vector2(1.0f, 0.0f), new Vector3(0f, 0f, -1f)),
+            new Vertex(new Vector3(-0.5f,  0.5f,  0.5f), new Vector2(1.0f, 1.0f), new Vector3(0f, 0f, -1f)),
+            new Vertex(new Vector3( 0.5f,  0.5f,  0.5f), new Vector2(0.0f, 1.0f), new Vector3(0f, 0f, -1f)),
+            new Vertex(new Vector3(-0.5f, -0.5f, -0.5f), new Vector2(0.0f, 1.0f), new Vector3(0f, 0f, -1f)),
+            new Vertex(new Vector3( 0.5f, -0.5f, -0.5f), new Vector2(0.0f, 1.0f), new Vector3(0f, 0f, -1f)),
+            new Vertex(new Vector3(-0.5f,  0.5f, -0.5f), new Vector2(0.0f, 1.0f), new Vector3(0f, 0f, -1f)),
+            new Vertex(new Vector3( 0.5f,  0.5f, -0.5f), new Vector2(0.0f, 1.0f), new Vector3(0f, 0f, -1f)),
+        };
+
+        List<int> indicies = new List<int>()
+        {
+            //Top
+            2, 6, 7,
+            2, 3, 7,
+
+            //Bottom
+            0, 4, 5,
+            0, 1, 5,
+
+            //Left
+            0, 2, 6,
+            0, 4, 6,
+
+            //Right
+            1, 3, 7,
+            1, 5, 7,
+
+            //Front
+            0, 2, 3,
+            0, 1, 3,
+
+            //Back
+            4, 6, 7,
+            4, 5, 7
+        };
+
+        CubeMesh = new Mesh(this, vertices, indicies, new List<Texture2D>() { Texture2D.GetSinglePixelTexture(this, new SixLabors.ImageSharp.PixelFormats.Rgba32(255, 255, 255, 255)) });
     }
+
 
     public void Render()
     {
@@ -119,13 +170,25 @@ public unsafe class Renderer : IDisposable
         context.PSSetShader(ref PixelShader!.NativeShader.Get(), null, 0);
         context.GSSetShader(null, null, 0);
 
+        VertexShaderData.ViewProjection = Matrix4x4.CreateLookAt(new Vector3(0f, 0f, -20 * MathF.Cos(s)), new Vector3(0f, 0f, -20f * MathF.Cos(s)) + Vector3.UnitZ, Vector3.UnitY) * Matrix4x4.CreatePerspectiveFieldOfView(1.39626f, 1280f/720f, 0.1f, 1000f);
+        VertexShaderData.World = Matrix4x4.CreateTranslation(0f, 0f, -20 * MathF.Cos(s));
+        VertexShaderDataBuffer.WriteData(this, ref VertexShaderData);
+
+        context.VSSetConstantBuffers(0, 1, VertexShaderDataBuffer.DataBuffer.GetAddressOf());
+
+        CubeMesh.Render();
+
         //foreach (RenderObject obj in RenderObjects)
         //{
         //    obj.Render(Camera);
         //}
 
+        s += 1 / 144f;
+
         SwapChain.Get().Present(1, 0);
     }
+
+    float s = 0f;
 
     private void CreateDeviceAndSwapChain(IWindow window)
     {

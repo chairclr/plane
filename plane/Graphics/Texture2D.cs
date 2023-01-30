@@ -1,8 +1,10 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
 using Silk.NET.DXGI;
+using Silk.NET.SDL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -18,7 +20,27 @@ public unsafe class Texture2D : IDisposable
 
     internal ComPtr<ID3D11Texture2D> NativeTexture = default;
 
-    internal ComPtr<ID3D11ShaderResourceView> ShaderResourceView = default;
+    private ComPtr<ID3D11ShaderResourceView> _shaderResourceView = default;
+
+    internal ComPtr<ID3D11ShaderResourceView> ShaderResourceView
+    {
+        get
+        {
+            if (Unsafe.IsNullRef(ref _shaderResourceView.Get()))
+            {
+                _shaderResourceView = CreateShaderResourceView();
+            }
+
+            return _shaderResourceView;
+        }
+
+        set
+        {
+            _shaderResourceView = value;
+        }
+    }
+
+    
 
     internal Texture2D(ComPtr<ID3D11Device> device, Texture2DDesc desc, TextureType textureType)
     {
@@ -29,7 +51,7 @@ public unsafe class Texture2D : IDisposable
         SilkMarshal.ThrowHResult(device.Get().CreateTexture2D(ref desc, null, NativeTexture.GetAddressOf()));
     }
 
-    public Texture2D(Renderer renderer, int width, int height, TextureType textureType, SampleDesc? sampleDesc = null, BindFlag bindFlags = BindFlag.ShaderResource, Format format = Format.FormatR8G8B8G8Unorm, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, uint arraySize = 1, uint mipLevels = 1, uint miscFlag = 0)
+    public Texture2D(Renderer renderer, int width, int height, TextureType textureType, SampleDesc? sampleDesc = null, BindFlag bindFlags = BindFlag.ShaderResource, Format format = Format.FormatR8G8B8A8Unorm, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, uint arraySize = 1, uint mipLevels = 1, uint miscFlag = 0)
     {
         Device = renderer.Device;
         TextureType = textureType;
@@ -53,7 +75,7 @@ public unsafe class Texture2D : IDisposable
         SilkMarshal.ThrowHResult(Device.Get().CreateTexture2D(ref desc, null, NativeTexture.GetAddressOf()));
     }
 
-    public Texture2D(Renderer renderer, int width, int height, TextureType textureType, SubresourceData subresourceData, SampleDesc? sampleDesc = null, BindFlag bindFlags = BindFlag.ShaderResource, Format format = Format.FormatR8G8B8G8Unorm, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, uint arraySize = 1, uint mipLevels = 1, uint miscFlag = 0)
+    public Texture2D(Renderer renderer, int width, int height, TextureType textureType, SubresourceData subresourceData, SampleDesc? sampleDesc = null, BindFlag bindFlags = BindFlag.ShaderResource, Format format = Format.FormatR8G8B8A8Unorm, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, uint arraySize = 1, uint mipLevels = 1, uint miscFlag = 0)
     {
         Device = renderer.Device;
         TextureType = textureType;
@@ -88,7 +110,7 @@ public unsafe class Texture2D : IDisposable
         {
             Width = (uint)image.Width,
             Height = (uint)image.Height,
-            Format = Format.FormatR8G8B8G8Unorm,
+            Format = Format.FormatR8G8B8A8Unorm,
             SampleDesc = sampleDesc.Value,
             BindFlags = (uint)bindFlags,
             Usage = usage,
@@ -136,6 +158,39 @@ public unsafe class Texture2D : IDisposable
         TextureType = textureType;
     }
 
+    internal ID3D11Resource* AsResource()
+    {
+        return (ID3D11Resource*)NativeTexture.GetPinnableReference();
+    }
+
+    internal Texture2DDesc GetTextureDescription()
+    {
+        Texture2DDesc textureDesc = new Texture2DDesc();
+
+        NativeTexture.Get().GetDesc(ref textureDesc);
+
+        return textureDesc;
+    }
+
+    internal ComPtr<ID3D11ShaderResourceView> CreateShaderResourceView()
+    {
+        ComPtr<ID3D11ShaderResourceView> resourceView = default;
+
+        Texture2DDesc textureDesc = GetTextureDescription();
+
+        ShaderResourceViewDesc shaderResourceViewDesc = new ShaderResourceViewDesc()
+        {
+            Format = textureDesc.Format,
+            ViewDimension = D3DSrvDimension.D3D101SrvDimensionTexture2D,
+        };
+
+        shaderResourceViewDesc.Texture2D.MipLevels = textureDesc.MipLevels;
+
+        SilkMarshal.ThrowHResult(Device.Get().CreateShaderResourceView(this.AsResource(), ref shaderResourceViewDesc, resourceView.GetAddressOf()));
+
+        return resourceView;
+    }
+
     public void Dispose()
     {
         GC.SuppressFinalize(this);
@@ -160,8 +215,5 @@ public unsafe class Texture2D : IDisposable
 
     public static Texture2D GetSinglePixelTexture(Renderer renderer, Rgba32 color) => GetSolidColorTexture(renderer, 1, 1, color);
 
-    internal ID3D11Resource* AsResource()
-    {
-        return (ID3D11Resource*)NativeTexture.GetPinnableReference();
-    }
+    
 }

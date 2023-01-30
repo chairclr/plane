@@ -60,30 +60,10 @@ public unsafe class Buffer<T> : IDisposable
 
     }
 
-    public Buffer(Renderer renderer, BindFlag bindFlag, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, ResourceMiscFlag resourceMiscFlags = ResourceMiscFlag.None)
-    {
-        Length = 0u;
-        Stride = (uint)Unsafe.SizeOf<T>();
-        Size = Length * Stride;
-        Device = renderer.Device;
-
-        BufferDesc bufferDesc = new BufferDesc()
-        {
-            Usage = usage,
-            ByteWidth = Size,
-            StructureByteStride = Stride,
-            BindFlags = (uint)bindFlag,
-            CPUAccessFlags = (uint)cpuAccessFlags,
-            MiscFlags = (uint)resourceMiscFlags
-        };
-
-        SilkMarshal.ThrowHResult(Device.Get().CreateBuffer(ref bufferDesc, null, DataBuffer.GetAddressOf()));
-    }
-
     public void WriteData(Renderer renderer, ReadOnlySpan<T> data)
     {
         MappedSubresource mappedSubresource = new MappedSubresource();
-        renderer.Context.Get().Map((ID3D11Resource*)DataBuffer.Handle, 0, Map.WriteDiscard, 0, ref mappedSubresource);
+        SilkMarshal.ThrowHResult(renderer.Context.Get().Map((ID3D11Resource*)DataBuffer.Handle, 0, Map.WriteDiscard, 0, ref mappedSubresource));
 
         Span<T> subresourceSpan = new Span<T>(mappedSubresource.PData, data.Length);
 
