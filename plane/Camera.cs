@@ -1,22 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using Silk.NET.Maths;
+﻿using System.Numerics;
+using Silk.NET.Windowing;
 
 namespace plane;
 
-public class Transform
+public class Camera
 {
     private Vector3 _translation = Vector3.Zero;
 
-    private Vector3 _scale = Vector3.One;
-
     private Quaternion _rotation = Quaternion.Identity;
-
-    private Matrix4x4 _worldMatrix = Matrix4x4.Identity;
 
     private Vector3 _forward = Vector3.UnitZ;
 
@@ -24,25 +15,28 @@ public class Transform
 
     private Vector3 _up = Vector3.UnitY;
 
-    private bool WorldMatrixNeedsUpdate = false; 
+    private Matrix4x4 _viewMatrix;
+
+    private bool ViewNeedsUpdate = false;
+
+    private readonly IWindow Window;
+
+    public Matrix4x4 ProjectionMatrix { get; private set; }
+
+    public Camera(IWindow window, float fovDegrees, float nearZ, float farZ)
+    {
+        Window = window;
+        UpdateProjectionMatrix(fovDegrees, nearZ, farZ);
+        UpdateViewMatrix();
+    }
 
     public Vector3 Translation
     {
         get => _translation;
-        set 
-        {
-            _translation = value;
-            WorldMatrixNeedsUpdate = true;
-        }
-    }
-
-    public Vector3 Scale
-    {
-        get => _scale;
         set
         {
-            _scale = value;
-            WorldMatrixNeedsUpdate = true;
+            _translation = value;
+            ViewNeedsUpdate = true;
         }
     }
 
@@ -52,7 +46,7 @@ public class Transform
         set
         {
             _rotation = value;
-            WorldMatrixNeedsUpdate = true;
+            ViewNeedsUpdate = true;
         }
     }
 
@@ -70,69 +64,32 @@ public class Transform
     public Vector3 Up => _up;
     public Vector3 Down => -_up;
 
-    public Matrix4x4 WorldMatrix
+    public Matrix4x4 ViewMatrix
     {
         get
         {
-            if (WorldMatrixNeedsUpdate)
+            if (ViewNeedsUpdate)
             {
-                UpdateWorldMatrix();
-                WorldMatrixNeedsUpdate = false;
+                UpdateViewMatrix();
+                ViewNeedsUpdate = false;
             }
 
-            return _worldMatrix;
+            return _viewMatrix;
         }
 
         set
         {
-            _worldMatrix = value;
+            _viewMatrix = value;
 
-            Matrix4x4.Decompose(_worldMatrix, out _scale, out _rotation, out _translation);
+            Matrix4x4.Decompose(_viewMatrix, out _, out _rotation, out _translation);
         }
     }
 
-    public Transform()
+    public void UpdateProjectionMatrix(float fovDegrees, float nearZ, float farZ)
     {
-
+        float fovRadians = fovDegrees * (MathF.PI / 180f);
+        ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(fovRadians, (float)Window.Size.X / (float)Window.Size.Y, nearZ, farZ);
     }
-
-    public Transform(Matrix4x4 worldMatrix)
-    {
-        WorldMatrix = worldMatrix;
-    }
-
-    public Transform(Vector3 translation, Vector3 scale)
-    {
-        Translation = translation;
-
-        Scale = scale;
-
-        UpdateWorldMatrix();
-    }
-
-    public Transform(Vector3 translation, Vector3 scale, Quaternion rotation)
-    {
-        _translation = translation;
-
-        _scale = scale;
-
-        _rotation = rotation;
-
-        UpdateWorldMatrix();
-    }
-
-    public Transform(Vector3 translation, Vector3 scale, Vector3 eulerRotation)
-    {
-        _translation = translation;
-
-        _scale = scale;
-
-        _rotation = Quaternion.CreateFromYawPitchRoll(eulerRotation.X, eulerRotation.Y, eulerRotation.Z);
-
-        UpdateWorldMatrix();
-    }
-
-    public Matrix4x4 GetScaleMatrix() => Matrix4x4.CreateScale(Scale);
 
     public Matrix4x4 GetRotationMatrix() => Matrix4x4.CreateFromQuaternion(Rotation);
 
@@ -189,7 +146,7 @@ public class Transform
         Rotation = Quaternion.Slerp(Rotation, Quaternion.CreateFromYawPitchRoll(yaw, pitch, 0.0f), amount);
     }
 
-    private void UpdateWorldMatrix()
+    private void UpdateViewMatrix()
     {
         Matrix4x4 rotationMatrix = GetRotationMatrix();
 
@@ -199,6 +156,6 @@ public class Transform
 
         _up = Vector3.Transform(Vector3.UnitY, rotationMatrix);
 
-        _worldMatrix = GetScaleMatrix() * rotationMatrix * GetTranslationMatrix();
+        _viewMatrix = Matrix4x4.CreateLookAt(Translation, Translation + Forward, Up);
     }
 }

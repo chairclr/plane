@@ -1,6 +1,6 @@
 ﻿using Silk.NET.Direct3D11;
 
-namespace plane.Graphics.Direct3D11;
+namespace plane.Graphics.Providers;
 
 public class D3D11Provider
 {

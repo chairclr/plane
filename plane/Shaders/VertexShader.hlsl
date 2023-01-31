@@ -16,7 +16,7 @@ PS_INPUT VSMain(VS_INPUT input)
     
     output.position = mul(output.worldPosition, ViewProjection);
     
-    output.normal = normalize(mul(float4(input.normal, 0.0), World));
+    output.normal = input.normal;
     
     return output;
 }

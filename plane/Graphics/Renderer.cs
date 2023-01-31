@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
 using plane.Diagnostics;
-using plane.Graphics.Direct3D11;
+using plane.Graphics.Providers;
 using plane.Graphics.Shaders;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
@@ -18,7 +18,7 @@ public unsafe class Renderer : IDisposable
 
     private ComPtr<IDXGISwapChain1> SwapChain = default;
 
-    private Texture2D? BackBuffer;
+    private readonly Texture2D? BackBuffer;
 
     private ComPtr<ID3D11RenderTargetView> RenderTargetView = default;
 
@@ -30,13 +30,13 @@ public unsafe class Renderer : IDisposable
 
     private Viewport Viewport = default;
 
-    private Rasterizer? Rasterizer;
+    private readonly Rasterizer? Rasterizer;
 
     // TODO: Implement blend state and alpha blending
 
-    private VertexShader? VertexShader;
+    private readonly VertexShader? VertexShader;
 
-    private PixelShader? PixelShader;
+    private readonly PixelShader? PixelShader;
 
     private ComPtr<ID3D11SamplerState> PixelShaderSampler = default;
 
@@ -44,7 +44,11 @@ public unsafe class Renderer : IDisposable
 
     public Buffer<VertexShaderBuffer> VertexShaderDataBuffer;
 
-    private Mesh CubeMesh;
+    public Camera Camera;
+
+    private readonly Model CubeModel;
+
+    private readonly Transform CubeTransform;
 
     public Renderer(IWindow window)
     {
@@ -102,48 +106,15 @@ public unsafe class Renderer : IDisposable
 
         VertexShaderDataBuffer = new Buffer<VertexShaderBuffer>(this, ref VertexShaderData, BindFlag.ConstantBuffer, usage: Usage.Dynamic, cpuAccessFlags: CpuAccessFlag.Write);
 
-        List<Vertex> vertices = new List<Vertex>()
-        {
-            new Vertex(new Vector3(-0.5f, -0.5f,  0.5f), new Vector2(0.0f, 0.0f), new Vector3(0f, 0f, -1f)),
-            new Vertex(new Vector3( 0.5f, -0.5f,  0.5f), new Vector2(1.0f, 0.0f), new Vector3(0f, 0f, -1f)),
-            new Vertex(new Vector3(-0.5f,  0.5f,  0.5f), new Vector2(1.0f, 1.0f), new Vector3(0f, 0f, -1f)),
-            new Vertex(new Vector3( 0.5f,  0.5f,  0.5f), new Vector2(0.0f, 1.0f), new Vector3(0f, 0f, -1f)),
-            new Vertex(new Vector3(-0.5f, -0.5f, -0.5f), new Vector2(0.0f, 1.0f), new Vector3(0f, 0f, -1f)),
-            new Vertex(new Vector3( 0.5f, -0.5f, -0.5f), new Vector2(0.0f, 1.0f), new Vector3(0f, 0f, -1f)),
-            new Vertex(new Vector3(-0.5f,  0.5f, -0.5f), new Vector2(0.0f, 1.0f), new Vector3(0f, 0f, -1f)),
-            new Vertex(new Vector3( 0.5f,  0.5f, -0.5f), new Vector2(0.0f, 1.0f), new Vector3(0f, 0f, -1f)),
-        };
+        Camera = new Camera(window, 70f, 0.2f, 1000f);
 
-        List<int> indicies = new List<int>()
-        {
-            //Top
-            2, 6, 7,
-            2, 3, 7,
 
-            //Bottom
-            0, 4, 5,
-            0, 1, 5,
+        CubeTransform = new Transform();
 
-            //Left
-            0, 2, 6,
-            0, 4, 6,
-
-            //Right
-            1, 3, 7,
-            1, 5, 7,
-
-            //Front
-            0, 2, 3,
-            0, 1, 3,
-
-            //Back
-            4, 6, 7,
-            4, 5, 7
-        };
-
-        CubeMesh = new Mesh(this, vertices, indicies, new List<Texture2D>() { Texture2D.GetSinglePixelTexture(this, new SixLabors.ImageSharp.PixelFormats.Rgba32(255, 255, 255, 255)) });
+        CubeModel = new Model(this, "Models/cube.obj");
     }
 
+    private Vector3 CubeRotation = Vector3.Zero;
 
     public void Render()
     {
@@ -152,7 +123,7 @@ public unsafe class Renderer : IDisposable
         context.OMSetRenderTargets(1, RenderTargetView.GetAddressOf(), DepthStencilView);
         context.OMSetDepthStencilState(DepthStencilState, 0);
 
-        float[] clearColor = new float[]{ 0f, 1f, 0f, 1f };
+        float[] clearColor = new float[]{ 0.55f, 0.7f, 0.75f, 1f };
         context.ClearRenderTargetView(RenderTargetView, ref clearColor[0]);
         context.ClearDepthStencilView(DepthStencilView, (uint)(ClearFlag.Depth | ClearFlag.Stencil), 1.0f, 0);
 
@@ -170,25 +141,27 @@ public unsafe class Renderer : IDisposable
         context.PSSetShader(ref PixelShader!.NativeShader.Get(), null, 0);
         context.GSSetShader(null, null, 0);
 
-        VertexShaderData.ViewProjection = Matrix4x4.CreateLookAt(new Vector3(0f, 0f, -2 * MathF.Cos(s)), new Vector3(0f, 0f, -2f * MathF.Cos(s)) + Vector3.UnitZ, Vector3.UnitY) * Matrix4x4.CreatePerspectiveFieldOfView(1.39626f, 1280f/720f, 0.1f, 1000f);
-        VertexShaderData.World = Matrix4x4.CreateTranslation(0f, 0f, -2 * MathF.Cos(s));
+        Camera.Translation = -Vector3.UnitZ * 3f;
+
+        CubeRotation.X += 0.01f;
+        CubeRotation.Y -= 0.01f;
+
+        CubeTransform.EulerRotation = CubeRotation;
+
+        VertexShaderData.World = CubeTransform.WorldMatrix;
+        VertexShaderData.ViewProjection = Camera.ViewMatrix * Camera.ProjectionMatrix;
+
+        VertexShaderData.World = Matrix4x4.Transpose(VertexShaderData.World);
+        VertexShaderData.ViewProjection = Matrix4x4.Transpose(VertexShaderData.ViewProjection);
+
         VertexShaderDataBuffer.WriteData(this, ref VertexShaderData);
 
         context.VSSetConstantBuffers(0, 1, VertexShaderDataBuffer.DataBuffer.GetAddressOf());
 
-        CubeMesh.Render();
-
-        //foreach (RenderObject obj in RenderObjects)
-        //{
-        //    obj.Render(Camera);
-        //}
-
-        s += 1 / 144f;
+        CubeModel.Render();
 
         SwapChain.Get().Present(1, 0);
     }
-
-    float s = 0f;
 
     private void CreateDeviceAndSwapChain(IWindow window)
     {

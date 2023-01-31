@@ -14,9 +14,9 @@ public class Mesh : IDisposable
 {
     private readonly Renderer Renderer;
 
-    private Buffer<Vertex> VertexBuffer;
+    private readonly Buffer<Vertex> VertexBuffer;
 
-    private Buffer<int> IndexBuffer;
+    private readonly Buffer<int> IndexBuffer;
 
     public readonly List<Texture2D> Textures;
 
