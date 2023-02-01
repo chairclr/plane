@@ -24,6 +24,6 @@ public class Rasterizer
     {
         Description = desc;
 
-        SilkMarshal.ThrowHResult(Device.Get().CreateRasterizerState(ref Description, RasterizerState.GetAddressOf()));
+        SilkMarshal.ThrowHResult(Device.Get().CreateRasterizerState(Description, RasterizerState.GetAddressOf()));
     }
 }

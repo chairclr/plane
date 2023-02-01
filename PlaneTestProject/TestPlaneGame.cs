@@ -25,17 +25,17 @@ public class TestPlaneGame : Plane
 
         Renderer!.RenderObjects.Add(CubeModel);
 
-        Renderer!.Camera.Translation = new Vector3(0f, 0f, -0.6f);
+        Renderer!.Camera.Translation = new Vector3(0f, 0f, -2f);
     }
 
     private Vector3 CubeRotation = Vector3.Zero;
 
     public override void Render()
     {
-        //CubeRotation.X -= DeltaTime;
-        //CubeRotation.Y += DeltaTime;
+        CubeRotation.X -= DeltaTime;
+        CubeRotation.Y += DeltaTime;
 
-        //CubeModel!.Transform.EulerRotation = CubeRotation;
+        CubeModel!.Transform.EulerRotation = CubeRotation;
 
         Console.WriteLine($"FPS: {1 / PreciseDeltaTime:F2}");
     }

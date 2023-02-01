@@ -96,7 +96,7 @@ public unsafe class Renderer : IDisposable
             MaxLOD = float.MaxValue,
         };
 
-        SilkMarshal.ThrowHResult(Device.Get().CreateSamplerState(ref sampDesc, PixelShaderSampler.GetAddressOf()));
+        SilkMarshal.ThrowHResult(Device.Get().CreateSamplerState(sampDesc, PixelShaderSampler.GetAddressOf()));
 
         Camera = new Camera(window, 70f, 0.2f, 1000f);
     }
@@ -116,7 +116,7 @@ public unsafe class Renderer : IDisposable
         context.IASetPrimitiveTopology(D3DPrimitiveTopology.D3D10PrimitiveTopologyTrianglelist);
 
         context.RSSetState(Rasterizer!.RasterizerState);
-        context.RSSetViewports(1, ref Viewport);
+        context.RSSetViewports(1, Viewport);
 
         context.PSSetSamplers(0, 1, PixelShaderSampler.GetAddressOf());
 
@@ -174,7 +174,7 @@ public unsafe class Renderer : IDisposable
 
         SilkMarshal.ThrowHResult(DXGIProvider.DXGI.Value.CreateDXGIFactory(ref SilkMarshal.GuidOf<IDXGIFactory2>(), (void**)dxgiFactory.GetAddressOf()));
 
-        SilkMarshal.ThrowHResult(dxgiFactory.Get().CreateSwapChainForHwnd((IUnknown*)Device.Handle, window.Native!.Win32!.Value!.Hwnd, ref swapChainDesc, null, null, SwapChain.GetAddressOf()));
+        SilkMarshal.ThrowHResult(dxgiFactory.Get().CreateSwapChainForHwnd((IUnknown*)Device.Handle, window.Native!.Win32!.Value!.Hwnd, swapChainDesc, null, null, SwapChain.GetAddressOf()));
     }
 
     private void CreateBackBuffer()
@@ -196,7 +196,7 @@ public unsafe class Renderer : IDisposable
             ViewDimension = RtvDimension.Texture2Dms
         };
 
-        SilkMarshal.ThrowHResult(Device.Get().CreateRenderTargetView(OffScreenBackBuffer.AsResource(), ref renderTargetViewDesc, OffScreenRenderTargetView.GetAddressOf()));
+        SilkMarshal.ThrowHResult(Device.Get().CreateRenderTargetView(OffScreenBackBuffer.AsResource(), renderTargetViewDesc, OffScreenRenderTargetView.GetAddressOf()));
     }
 
     private void CreateDepthBuffer(IWindow window)
@@ -209,7 +209,7 @@ public unsafe class Renderer : IDisposable
             ViewDimension = DsvDimension.Texture2Dms,
         };
 
-        SilkMarshal.ThrowHResult(Device.Get().CreateDepthStencilView(DepthBuffer.AsResource(), ref depthStencilViewDesc, DepthStencilView.GetAddressOf()));
+        SilkMarshal.ThrowHResult(Device.Get().CreateDepthStencilView(DepthBuffer.AsResource(), depthStencilViewDesc, DepthStencilView.GetAddressOf()));
 
         Context.Get().OMSetRenderTargets(1, OffScreenRenderTargetView.GetAddressOf(), DepthStencilView);
 
@@ -220,7 +220,7 @@ public unsafe class Renderer : IDisposable
             DepthFunc = ComparisonFunc.LessEqual,
         };
 
-        SilkMarshal.ThrowHResult(Device.Get().CreateDepthStencilState(ref depthStencilDesc, DepthStencilState.GetAddressOf()));
+        SilkMarshal.ThrowHResult(Device.Get().CreateDepthStencilState(depthStencilDesc, DepthStencilState.GetAddressOf()));
     }
 
     private void CreateViewport(IWindow window)
@@ -237,7 +237,7 @@ public unsafe class Renderer : IDisposable
 
         Viewport = viewport;
 
-        Context.Get().RSSetViewports(1, ref Viewport);
+        Context.Get().RSSetViewports(1, Viewport);
     }
 
     public void Dispose()

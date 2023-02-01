@@ -51,7 +51,7 @@ public unsafe class Buffer<T> : IDisposable
                 PSysMem = bufferData
             };
 
-            SilkMarshal.ThrowHResult(Device.Get().CreateBuffer(ref bufferDesc, ref bufferSubresource, DataBuffer.GetAddressOf()));
+            SilkMarshal.ThrowHResult(Device.Get().CreateBuffer(bufferDesc, bufferSubresource, DataBuffer.GetAddressOf()));
         }
     }
     public Buffer(Renderer renderer, ref T data, BindFlag bindFlag, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, ResourceMiscFlag resourceMiscFlags = ResourceMiscFlag.None)
