@@ -13,9 +13,7 @@ public static class DebugExtensions
     {
         Debug.Assert(callback is not null, "Callback cannot be null");
 
-        ComPtr<ID3D11InfoQueue> infoQueue = default;
-
-        SilkMarshal.ThrowHResult(device.Get().QueryInterface(ref SilkMarshal.GuidOf<ID3D11InfoQueue>(), (void**)infoQueue.GetAddressOf()));
+        SilkMarshal.ThrowHResult(device.QueryInterface(out ComPtr<ID3D11InfoQueue> infoQueue));
 
         object infoQueueLock = new object();
 
@@ -40,16 +38,16 @@ public static class DebugExtensions
                         for (ulong i = 0; i < numMessages; i++)
                         {
                             nuint msgByteLength = 0;
-                            SilkMarshal.ThrowHResult(infoQueue.Get().GetMessageA(i, null, ref msgByteLength));
+                            SilkMarshal.ThrowHResult(infoQueue.GetMessageA(i, null, ref msgByteLength));
 
                             byte[] msgBytes = new byte[msgByteLength];
                             ref Message msg = ref Unsafe.As<byte, Message>(ref msgBytes[0]);
-                            SilkMarshal.ThrowHResult(infoQueue.Get().GetMessageA(i, ref msg, ref msgByteLength));
+                            SilkMarshal.ThrowHResult(infoQueue.GetMessageA(i, ref msg, ref msgByteLength));
 
-                            callback(new Direct3D11Message(ref msg));
+                            callback(new Direct3D11Message(msg));
                         }
 
-                        infoQueue.Get().ClearStoredMessages();
+                        infoQueue.ClearStoredMessages();
                     }
                 }
 
@@ -67,7 +65,7 @@ public static class DebugExtensions
         {
             foreach ((ComPtr<ID3D11InfoQueue> infoQueue, Action<Direct3D11Message> callback, object infoQueueLock) in PinnedInfoQueues)
             {
-                ulong numMessages = infoQueue.Get().GetNumStoredMessages();
+                ulong numMessages = infoQueue.GetNumStoredMessages();
 
                 if (numMessages == 0)
                 {
@@ -79,16 +77,16 @@ public static class DebugExtensions
                     for (ulong i = 0; i < numMessages; i++)
                     {
                         nuint msgByteLength = 0;
-                        SilkMarshal.ThrowHResult(infoQueue.Get().GetMessageA(i, null, ref msgByteLength));
+                        SilkMarshal.ThrowHResult(infoQueue.GetMessageA(i, null, ref msgByteLength));
 
                         byte[] msgBytes = new byte[msgByteLength];
                         ref Message msg = ref Unsafe.As<byte, Message>(ref msgBytes[0]);
-                        SilkMarshal.ThrowHResult(infoQueue.Get().GetMessageA(i, ref msg, ref msgByteLength));
+                        SilkMarshal.ThrowHResult(infoQueue.GetMessageA(i, ref msg, ref msgByteLength));
 
-                        callback(new Direct3D11Message(ref msg));
+                        callback(new Direct3D11Message(msg));
                     }
 
-                    infoQueue.Get().ClearStoredMessages();
+                    infoQueue.ClearStoredMessages();
                 }
             }
         };

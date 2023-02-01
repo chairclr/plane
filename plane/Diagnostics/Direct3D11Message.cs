@@ -19,7 +19,7 @@ public class Direct3D11Message
 
     public readonly MessageID ID;
 
-    public unsafe Direct3D11Message(ref Message message)
+    public unsafe Direct3D11Message(in Message message)
     {
         Description = SilkMarshal.PtrToString((nint)message.PDescription);
         Severity = message.Severity;
