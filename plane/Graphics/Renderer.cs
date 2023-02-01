@@ -18,9 +18,13 @@ public unsafe class Renderer : IDisposable
 
     private ComPtr<IDXGISwapChain1> SwapChain = default;
 
-    private readonly Texture2D? BackBuffer;
+    private Texture2D? BackBuffer;
 
     private ComPtr<ID3D11RenderTargetView> RenderTargetView = default;
+
+    private Texture2D? OffScreenBackBuffer;
+
+    private ComPtr<ID3D11RenderTargetView> OffScreenRenderTargetView = default;
 
     private Texture2D? DepthBuffer;
 
@@ -40,26 +44,16 @@ public unsafe class Renderer : IDisposable
 
     private ComPtr<ID3D11SamplerState> PixelShaderSampler = default;
 
-    public VertexShaderBuffer VertexShaderData;
-
-    public Buffer<VertexShaderBuffer> VertexShaderDataBuffer;
-
     public Camera Camera;
 
-    private readonly Model CubeModel;
-
-    private readonly Transform CubeTransform;
+    public readonly List<RenderObject> RenderObjects = new List<RenderObject>();
 
     public Renderer(IWindow window)
     {
         CreateDeviceAndSwapChain(window);
 
-        BackBuffer = new Texture2D(this, TextureType.BackBuffer);
-
-        SilkMarshal.ThrowHResult(SwapChain.Get().GetBuffer(0, ref Texture2D.Guid, (void**)BackBuffer.NativeTexture.GetAddressOf()));
-
-        SilkMarshal.ThrowHResult(Device.Get().CreateRenderTargetView(BackBuffer.AsResource(), null, RenderTargetView.GetAddressOf()));
-
+        CreateBackBuffer();
+        
         CreateDepthBuffer(window);
 
         CreateViewport(window);
@@ -93,7 +87,7 @@ public unsafe class Renderer : IDisposable
 
         SamplerDesc sampDesc = new SamplerDesc()
         {
-            Filter = Filter.MinMagMipLinear,
+            Filter = Filter.Anisotropic,
             AddressU = TextureAddressMode.Wrap,
             AddressV = TextureAddressMode.Wrap,
             AddressW = TextureAddressMode.Wrap,
@@ -104,36 +98,25 @@ public unsafe class Renderer : IDisposable
 
         SilkMarshal.ThrowHResult(Device.Get().CreateSamplerState(ref sampDesc, PixelShaderSampler.GetAddressOf()));
 
-        VertexShaderDataBuffer = new Buffer<VertexShaderBuffer>(this, ref VertexShaderData, BindFlag.ConstantBuffer, usage: Usage.Dynamic, cpuAccessFlags: CpuAccessFlag.Write);
-
         Camera = new Camera(window, 70f, 0.2f, 1000f);
-
-
-        CubeTransform = new Transform();
-
-        CubeModel = new Model(this, "Models/cube.obj");
     }
-
-    private Vector3 CubeRotation = Vector3.Zero;
 
     public void Render()
     {
         ref ID3D11DeviceContext context = ref Context.Get();
 
-        context.OMSetRenderTargets(1, RenderTargetView.GetAddressOf(), DepthStencilView);
+        context.OMSetRenderTargets(1, OffScreenRenderTargetView.GetAddressOf(), DepthStencilView);
         context.OMSetDepthStencilState(DepthStencilState, 0);
 
-        float[] clearColor = new float[]{ 0.55f, 0.7f, 0.75f, 1f };
-        context.ClearRenderTargetView(RenderTargetView, ref clearColor[0]);
+        float[] clearColor = new float[] { 0.55f, 0.7f, 0.75f, 1f };
+        context.ClearRenderTargetView(OffScreenRenderTargetView, ref clearColor[0]);
         context.ClearDepthStencilView(DepthStencilView, (uint)(ClearFlag.Depth | ClearFlag.Stencil), 1.0f, 0);
 
         context.IASetInputLayout(VertexShader!.NativeInputLayout);
         context.IASetPrimitiveTopology(D3DPrimitiveTopology.D3D10PrimitiveTopologyTrianglelist);
 
-
         context.RSSetState(Rasterizer!.RasterizerState);
         context.RSSetViewports(1, ref Viewport);
-
 
         context.PSSetSamplers(0, 1, PixelShaderSampler.GetAddressOf());
 
@@ -141,32 +124,18 @@ public unsafe class Renderer : IDisposable
         context.PSSetShader(ref PixelShader!.NativeShader.Get(), null, 0);
         context.GSSetShader(null, null, 0);
 
-        Camera.Translation = -Vector3.UnitZ * 3f;
+        for (int i = 0; i < RenderObjects.Count; i++)
+        {
+            RenderObjects[i].Render(Camera);
+        }
 
-        CubeRotation.X += 0.01f;
-        CubeRotation.Y -= 0.01f;
-
-        CubeTransform.EulerRotation = CubeRotation;
-
-        VertexShaderData.World = CubeTransform.WorldMatrix;
-        VertexShaderData.ViewProjection = Camera.ViewMatrix * Camera.ProjectionMatrix;
-
-        VertexShaderData.World = Matrix4x4.Transpose(VertexShaderData.World);
-        VertexShaderData.ViewProjection = Matrix4x4.Transpose(VertexShaderData.ViewProjection);
-
-        VertexShaderDataBuffer.WriteData(this, ref VertexShaderData);
-
-        context.VSSetConstantBuffers(0, 1, VertexShaderDataBuffer.DataBuffer.GetAddressOf());
-
-        CubeModel.Render();
+        context.ResolveSubresource(BackBuffer!.AsResource(), 0, OffScreenBackBuffer!.AsResource(), 0, BackBuffer.Format);
 
         SwapChain.Get().Present(1, 0);
     }
 
     private void CreateDeviceAndSwapChain(IWindow window)
     {
-        bool debug = Debugger.IsAttached;
-
         SilkMarshal.ThrowHResult
         (
             D3D11Provider.D3D11.Value.CreateDevice
@@ -174,7 +143,11 @@ public unsafe class Renderer : IDisposable
                 pAdapter: default(ComPtr<IDXGIAdapter>),
                 DriverType: D3DDriverType.Hardware,
                 Software: 0,
-                Flags: debug ? (uint)CreateDeviceFlag.Debug : (uint)CreateDeviceFlag.None,
+#if DEBUG
+                Flags: (uint)CreateDeviceFlag.Debug,
+#else
+                Flags: (uint)CreateDeviceFlag.None,
+#endif
                 pFeatureLevels: null,
                 FeatureLevels: 0,
                 SDKVersion: D3D11.SdkVersion,
@@ -184,10 +157,9 @@ public unsafe class Renderer : IDisposable
             )
         );
 
-        if (debug)
-        {
-            Device.SetInfoQueueCallback((Direct3D11Message message) => Logger.Log.WriteLine(message.Description ?? "", message.LogSeverity, DateTime.Now));
-        }
+#if DEBUG
+        Device.SetInfoQueueCallback((Direct3D11Message message) => Logger.Log.WriteLine(message.Description ?? "", message.LogSeverity, DateTime.Now));
+#endif
 
         SwapChainDesc1 swapChainDesc = new SwapChainDesc1()
         {
@@ -205,19 +177,41 @@ public unsafe class Renderer : IDisposable
         SilkMarshal.ThrowHResult(dxgiFactory.Get().CreateSwapChainForHwnd((IUnknown*)Device.Handle, window.Native!.Win32!.Value!.Hwnd, ref swapChainDesc, null, null, SwapChain.GetAddressOf()));
     }
 
+    private void CreateBackBuffer()
+    {
+        BackBuffer = new Texture2D(this, TextureType.BackBuffer);
+
+        SilkMarshal.ThrowHResult(SwapChain.Get().GetBuffer(0, ref Texture2D.Guid, (void**)BackBuffer.NativeTexture.GetAddressOf()));
+
+        SilkMarshal.ThrowHResult(Device.Get().CreateRenderTargetView(BackBuffer.AsResource(), null, RenderTargetView.GetAddressOf()));
+
+        Texture2DDesc backBufferDesc = BackBuffer.GetTextureDescription();
+
+        BackBuffer.Format = backBufferDesc.Format;
+
+        OffScreenBackBuffer = new Texture2D(this, (int)backBufferDesc.Width, (int)backBufferDesc.Height, TextureType.None, new SampleDesc(8, 0), BindFlag.RenderTarget, BackBuffer.Format);
+
+        RenderTargetViewDesc renderTargetViewDesc = new RenderTargetViewDesc()
+        {
+            ViewDimension = RtvDimension.Texture2Dms
+        };
+
+        SilkMarshal.ThrowHResult(Device.Get().CreateRenderTargetView(OffScreenBackBuffer.AsResource(), ref renderTargetViewDesc, OffScreenRenderTargetView.GetAddressOf()));
+    }
+
     private void CreateDepthBuffer(IWindow window)
     {
-        DepthBuffer = new Texture2D(this, window.Size.X, window.Size.Y, TextureType.DepthBuffer, new SampleDesc(1, 0), BindFlag.DepthStencil | BindFlag.ShaderResource, Format.FormatR32Typeless, usage: Usage.Default);
+        DepthBuffer = new Texture2D(this, window.Size.X, window.Size.Y, TextureType.DepthBuffer, new SampleDesc(8, 0), BindFlag.DepthStencil | BindFlag.ShaderResource, Format.FormatR32Typeless, usage: Usage.Default);
 
         DepthStencilViewDesc depthStencilViewDesc = new DepthStencilViewDesc()
         {
             Format = Format.FormatD32Float,
-            ViewDimension = DsvDimension.Texture2D,
+            ViewDimension = DsvDimension.Texture2Dms,
         };
 
         SilkMarshal.ThrowHResult(Device.Get().CreateDepthStencilView(DepthBuffer.AsResource(), ref depthStencilViewDesc, DepthStencilView.GetAddressOf()));
 
-        Context.Get().OMSetRenderTargets(1, RenderTargetView.GetAddressOf(), DepthStencilView);
+        Context.Get().OMSetRenderTargets(1, OffScreenRenderTargetView.GetAddressOf(), DepthStencilView);
 
         DepthStencilDesc depthStencilDesc = new DepthStencilDesc()
         {

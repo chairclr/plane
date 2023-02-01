@@ -6,7 +6,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        using Plane game = new Plane("Epic Window");
+        using TestPlaneGame game = new TestPlaneGame("Epic Window");
 
         game.Run();
     }

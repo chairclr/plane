@@ -20,6 +20,8 @@ public unsafe class Texture2D : IDisposable
 
     internal ComPtr<ID3D11Texture2D> NativeTexture = default;
 
+    internal Format Format = Format.FormatUnknown;
+
     private ComPtr<ID3D11ShaderResourceView> _shaderResourceView = default;
 
     internal ComPtr<ID3D11ShaderResourceView> ShaderResourceView
@@ -54,7 +56,10 @@ public unsafe class Texture2D : IDisposable
     public Texture2D(Renderer renderer, int width, int height, TextureType textureType, SampleDesc? sampleDesc = null, BindFlag bindFlags = BindFlag.ShaderResource, Format format = Format.FormatR8G8B8A8Unorm, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, uint arraySize = 1, uint mipLevels = 1, uint miscFlag = 0)
     {
         Device = renderer.Device;
+
         TextureType = textureType;
+
+        Format = format;
 
         sampleDesc ??= new SampleDesc(1, 0);
 
@@ -78,7 +83,10 @@ public unsafe class Texture2D : IDisposable
     public Texture2D(Renderer renderer, int width, int height, TextureType textureType, SubresourceData subresourceData, SampleDesc? sampleDesc = null, BindFlag bindFlags = BindFlag.ShaderResource, Format format = Format.FormatR8G8B8A8Unorm, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, uint arraySize = 1, uint mipLevels = 1, uint miscFlag = 0)
     {
         Device = renderer.Device;
+
         TextureType = textureType;
+
+        Format = format;
 
         sampleDesc ??= new SampleDesc(1, 0);
 
@@ -102,7 +110,10 @@ public unsafe class Texture2D : IDisposable
     public Texture2D(Renderer renderer, Image<Rgba32> image, TextureType textureType, SampleDesc? sampleDesc = null, BindFlag bindFlags = BindFlag.ShaderResource, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, uint arraySize = 1, uint mipLevels = 1, uint miscFlag = 0)
     {
         Device = renderer.Device;
+
         TextureType = textureType;
+
+        Format = Format.FormatR8G8B8A8Unorm;
 
         sampleDesc ??= new SampleDesc(1, 0);
 
@@ -214,6 +225,4 @@ public unsafe class Texture2D : IDisposable
     }
 
     public static Texture2D GetSinglePixelTexture(Renderer renderer, Rgba32 color) => GetSolidColorTexture(renderer, 1, 1, color);
-
-    
 }
