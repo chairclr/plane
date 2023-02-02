@@ -10,10 +10,10 @@ namespace plane.Graphics.Providers;
 
 public class AssimpProvider
 {
-    public static Lazy<Silk.NET.Assimp.Assimp> Assimp { get; private set; }
+    public static Lazy<Assimp> Assimp { get; private set; }
 
     static AssimpProvider()
     {
-        Assimp = new Lazy<Silk.NET.Assimp.Assimp>(() => Silk.NET.Assimp.Assimp.GetApi());
+        Assimp = new Lazy<Assimp>(() => Silk.NET.Assimp.Assimp.GetApi());
     }
 }

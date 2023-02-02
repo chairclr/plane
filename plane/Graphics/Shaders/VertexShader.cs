@@ -1,4 +1,5 @@
-﻿using Silk.NET.Core.Native;
+﻿using System.Runtime.CompilerServices;
+using Silk.NET.Core.Native;
 using Silk.NET.Direct3D.Compilers;
 using Silk.NET.Direct3D11;
 
@@ -11,15 +12,12 @@ public class VertexShader : Shader, IDisposable
 
     internal unsafe override void Create(Renderer renderer)
     {
-        SilkMarshal.ThrowHResult(renderer.Device.Get().CreateVertexShader(ShaderData.Get().GetBufferPointer(), ShaderData.Get().GetBufferSize(), null, NativeShader.GetAddressOf()));
+        SilkMarshal.ThrowHResult(renderer.Device.CreateVertexShader(ShaderData.GetBufferPointer(), ShaderData.GetBufferSize(), ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
     }
 
-    internal unsafe void SetInputLayout(Renderer renderer, Span<InputElementDesc> inputLayout)
+    internal unsafe void SetInputLayout(Renderer renderer, ReadOnlySpan<InputElementDesc> inputLayout)
     {
-        fixed (InputElementDesc* layoutPtr = &inputLayout[0])
-        {
-            SilkMarshal.ThrowHResult(renderer.Device.Get().CreateInputLayout(layoutPtr, (uint)inputLayout.Length, ShaderData.Get().GetBufferPointer(), ShaderData.Get().GetBufferSize(), NativeInputLayout.GetAddressOf()));
-        }
+        SilkMarshal.ThrowHResult(renderer.Device.CreateInputLayout(inputLayout[0], (uint)inputLayout.Length, ShaderData.GetBufferPointer(), ShaderData.GetBufferSize(), ref NativeInputLayout));
     }
 
     public new void Dispose()
