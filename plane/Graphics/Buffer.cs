@@ -51,9 +51,10 @@ public unsafe class Buffer<T> : IDisposable
                 PSysMem = bufferData
             };
 
-            SilkMarshal.ThrowHResult(Device.Get().CreateBuffer(bufferDesc, bufferSubresource, DataBuffer.GetAddressOf()));
+            SilkMarshal.ThrowHResult(Device.CreateBuffer(bufferDesc, bufferSubresource, ref DataBuffer));
         }
     }
+
     public Buffer(Renderer renderer, ref T data, BindFlag bindFlag, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, ResourceMiscFlag resourceMiscFlags = ResourceMiscFlag.None)
         : this(renderer, new ReadOnlySpan<T>(Unsafe.AsPointer(ref data), 1), bindFlag, usage, cpuAccessFlags, resourceMiscFlags)
     {
@@ -63,25 +64,27 @@ public unsafe class Buffer<T> : IDisposable
     public void WriteData(Renderer renderer, ReadOnlySpan<T> data)
     {
         MappedSubresource mappedSubresource = new MappedSubresource();
-        SilkMarshal.ThrowHResult(renderer.Context.Get().Map((ID3D11Resource*)DataBuffer.Handle, 0, Map.WriteDiscard, 0, ref mappedSubresource));
+
+        SilkMarshal.ThrowHResult(renderer.Context.Map(DataBuffer, 0, Map.WriteDiscard, 0, ref mappedSubresource));
 
         Span<T> subresourceSpan = new Span<T>(mappedSubresource.PData, data.Length);
 
         data.CopyTo(subresourceSpan);
 
-        renderer.Context.Get().Unmap((ID3D11Resource*)DataBuffer.Handle, 0);
+        renderer.Context.Unmap(DataBuffer, 0);
     }
 
     public void WriteData(Renderer renderer, ReadOnlySpan<T> data, uint subresource, Map mapType, MapFlag mapFlags)
     {
         MappedSubresource mappedSubresource = new MappedSubresource();
-        renderer.Context.Get().Map((ID3D11Resource*)DataBuffer.Handle, subresource, mapType, (uint)mapFlags, ref mappedSubresource);
+
+        renderer.Context.Map(DataBuffer, subresource, mapType, (uint)mapFlags, ref mappedSubresource);
 
         Span<T> subresourceSpan = new Span<T>(mappedSubresource.PData, data.Length);
 
         data.CopyTo(subresourceSpan);
 
-        renderer.Context.Get().Unmap((ID3D11Resource*)DataBuffer.Handle, 0);
+        renderer.Context.Unmap(DataBuffer, 0);
     }
 
     public void WriteData(Renderer renderer, ref T data) => WriteData(renderer, new ReadOnlySpan<T>(Unsafe.AsPointer(ref data), 1));
@@ -91,8 +94,6 @@ public unsafe class Buffer<T> : IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-
-        Device.Dispose();
 
         DataBuffer.Dispose();
     }

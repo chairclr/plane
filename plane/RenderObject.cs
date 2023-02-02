@@ -38,10 +38,7 @@ public abstract class RenderObject : IDisposable
 
         VertexShaderDataBuffer.WriteData(Renderer, ref VertexShaderData);
 
-        unsafe
-        {
-            Renderer.Context.Get().VSSetConstantBuffers(0, 1, VertexShaderDataBuffer.DataBuffer.GetAddressOf());
-        }
+        Renderer.Context.VSSetConstantBuffers(0, 1, ref VertexShaderDataBuffer.DataBuffer);
     }
 
     public void Dispose()

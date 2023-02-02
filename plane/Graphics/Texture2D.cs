@@ -24,7 +24,7 @@ public unsafe class Texture2D : IDisposable
 
     private ComPtr<ID3D11ShaderResourceView> _shaderResourceView = default;
 
-    internal ComPtr<ID3D11ShaderResourceView> ShaderResourceView
+    internal ref ComPtr<ID3D11ShaderResourceView> ShaderResourceView
     {
         get
         {
@@ -33,12 +33,7 @@ public unsafe class Texture2D : IDisposable
                 _shaderResourceView = CreateShaderResourceView();
             }
 
-            return _shaderResourceView;
-        }
-
-        set
-        {
-            _shaderResourceView = value;
+            return ref _shaderResourceView;
         }
     }
 

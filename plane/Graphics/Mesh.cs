@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Silk.NET.Direct3D11;
 using Silk.NET.DXGI;
+using Silk.NET.Core.Native;
 using Silk.NET.SDL;
 
 namespace plane.Graphics;
@@ -39,12 +40,12 @@ public class Mesh : IDisposable
         {
             if (tex.TextureType == TextureType.Diffuse)
             {
-                Renderer.Context.Get().PSSetShaderResources(0, 1, tex.ShaderResourceView.GetAddressOf());
+                Renderer.Context.PSSetShaderResources(0, 1, ref tex.ShaderResourceView);
                 break;
             }
         }
 
-        Renderer.Context.Get().IASetVertexBuffers(0, 1, VertexBuffer.DataBuffer.GetAddressOf(), VertexBuffer.Stride, offset);
+        Renderer.Context.Get().IASetVertexBuffers(0, 1, ref VertexBuffer.DataBuffer, VertexBuffer.Stride, offset);
         Renderer.Context.Get().IASetIndexBuffer(IndexBuffer.DataBuffer, Format.FormatR32Uint, 0);
         Renderer.Context.Get().DrawIndexed(IndexBuffer.Length, 0, 0);
     }

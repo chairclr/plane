@@ -10,5 +10,5 @@ public abstract class Logger
 {
     public static Logger Log { get; set; } = new ConsoleLogger();
 
-    public abstract void WriteLine(string message, LogSeverity severity, DateTime time);
+    public abstract void WriteLine(string? message, LogSeverity severity, DateTime time);
 }
