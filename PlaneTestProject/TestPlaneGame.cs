@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using plane;
+using plane.Diagnostics;
 using Plane = plane.Plane;
 
 namespace PlaneTestProject;
@@ -21,7 +22,7 @@ public class TestPlaneGame : Plane
 
     public override void Load()
     {
-        CubeModel = new RenderModel(Renderer!, "Models/cube.obj");
+        CubeModel = new RenderModel(Renderer!, Path.Combine(Path.GetDirectoryName(typeof(TestPlaneGame).Assembly.Location)!, "Models/cube.obj"));
 
         Renderer!.RenderObjects.Add(CubeModel);
 
@@ -36,8 +37,6 @@ public class TestPlaneGame : Plane
         CubeRotation.Y += DeltaTime;
 
         CubeModel!.Transform.EulerRotation = CubeRotation;
-
-        Console.WriteLine($"FPS: {1 / PreciseDeltaTime:F2}");
     }
 
     public override void Update()

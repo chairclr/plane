@@ -363,4 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Models
-!plane/Models/**
+!PLaneTestProject/Models/**

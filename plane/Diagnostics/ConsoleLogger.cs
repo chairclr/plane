@@ -15,7 +15,7 @@ public class ConsoleLogger : Logger
         switch (severity)
         {
             case LogSeverity.Info:
-                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.ForegroundColor = ConsoleColor.DarkGray;
                 break;
             case LogSeverity.Warning:
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -25,7 +25,7 @@ public class ConsoleLogger : Logger
                 break;
         }
 
-        Console.WriteLine($"[{time:HH:mm:ss:FFF}] {message}");
+        Console.WriteLine($"[{time:mm:ss:ffff}] {message}");
 
         Console.ResetColor();
     }
