@@ -49,6 +49,10 @@ public unsafe class Renderer : IDisposable
 
     public readonly List<RenderObject> RenderObjects = new List<RenderObject>();
 
+    private PixelShaderBuffer PixelShaderBufferData;
+
+    private Buffer<PixelShaderBuffer> PixelShaderBuffer;
+
     public Renderer(IWindow window)
     {
         CreateDeviceAndSwapChain(window);
@@ -99,6 +103,8 @@ public unsafe class Renderer : IDisposable
 
         SilkMarshal.ThrowHResult(Device.CreateSamplerState(sampDesc, ref PixelShaderSampler));
 
+        PixelShaderBuffer = new Buffer<PixelShaderBuffer>(this, ref PixelShaderBufferData, BindFlag.ConstantBuffer, Usage.Dynamic, CpuAccessFlag.Write);
+
         Camera = new Camera(window, 70f, 0.2f, 1000f);
     }
 
@@ -122,6 +128,11 @@ public unsafe class Renderer : IDisposable
         Context.VSSetShader(VertexShader!.NativeShader, null, 0);
         Context.PSSetShader(PixelShader!.NativeShader, null, 0);
         Context.GSSetShader(ref Unsafe.NullRef<ID3D11GeometryShader>(), null, 0);
+
+        PixelShaderBufferData.TimeElapsed += 1f / 144f;
+
+        PixelShaderBuffer.WriteData(this, ref PixelShaderBufferData);
+        Context.PSSetConstantBuffers(0, 1, ref PixelShaderBuffer.DataBuffer);
 
         for (int i = 0; i < RenderObjects.Count; i++)
         {

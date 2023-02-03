@@ -1,5 +1,11 @@
 ﻿#include "Common.hlsl"
 
+cbuffer PixelShaderBuffer : register(b0)
+{
+    float TimeElapsed;
+    float3 Padding;
+};
+
 SamplerState LinearSamplerView : SAMPLER : register(s0);
 Texture2D MainTextureView : TEXTURE : register(t0);
 
@@ -9,9 +15,9 @@ PS_OUTPUT PSMain(PS_INPUT input) : SV_TARGET
     
     float4 finalColor = float4(0.0, 0.0, 0.0, 1.0);
     
-    float4 textureColor = MainTextureView.Sample(LinearSamplerView, input.uv);
+    float4 textureColor = MainTextureView.Sample(LinearSamplerView, cos(input.uv + TimeElapsed) * 0.5 + 0.5);
     
-    finalColor = float4(textureColor.xyz, textureColor.a);
+    finalColor = float4(textureColor.xyz, 1.0);
     
     output.color = finalColor;
     

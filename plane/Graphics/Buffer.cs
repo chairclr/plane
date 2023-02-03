@@ -38,7 +38,6 @@ public unsafe class Buffer<T> : IDisposable
         {
             Usage = usage,
             ByteWidth = Size,
-            StructureByteStride = Stride,
             BindFlags = (uint)bindFlag,
             CPUAccessFlags = (uint)cpuAccessFlags,
             MiscFlags = (uint)resourceMiscFlags
