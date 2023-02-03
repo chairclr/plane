@@ -15,7 +15,7 @@ PS_OUTPUT PSMain(PS_INPUT input) : SV_TARGET
     
     float4 finalColor = float4(0.0, 0.0, 0.0, 1.0);
     
-    float4 textureColor = MainTextureView.Sample(LinearSamplerView, cos(input.uv + TimeElapsed) * 0.5 + 0.5);
+    float4 textureColor = MainTextureView.Sample(LinearSamplerView, input.uv);
     
     finalColor = float4(textureColor.xyz, 1.0);
     

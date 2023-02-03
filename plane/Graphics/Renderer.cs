@@ -7,12 +7,15 @@ using plane.Graphics.Shaders;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
 using Silk.NET.DXGI;
+using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
 namespace plane.Graphics;
 
 public unsafe class Renderer : IDisposable
 {
+    public IWindow Window;
+
     internal ComPtr<ID3D11Device> Device = default;
 
     internal ComPtr<ID3D11DeviceContext> Context = default;
@@ -55,13 +58,15 @@ public unsafe class Renderer : IDisposable
 
     public Renderer(IWindow window)
     {
-        CreateDeviceAndSwapChain(window);
+        Window = window;
+
+        CreateDeviceAndSwapChain();
 
         CreateBackBuffer();
         
-        CreateDepthBuffer(window);
+        CreateDepthBuffer();
 
-        CreateViewport(window);
+        CreateViewport();
 
         RasterizerDesc rasterizerDesc = new RasterizerDesc()
         {
@@ -144,7 +149,54 @@ public unsafe class Renderer : IDisposable
         SwapChain.Present(1, 0);
     }
 
-    private void CreateDeviceAndSwapChain(IWindow window)
+    internal void Resize()
+    {
+        Texture2DDesc backBufferDesc = BackBuffer!.GetTextureDescription();
+
+        Texture2DDesc multiSampleBackBufferDesc = MultiSampleBackBuffer!.GetTextureDescription();
+
+        Texture2DDesc depthBufferDesc = DepthBuffer!.GetTextureDescription();
+
+        DepthStencilViewDesc depthStencilViewDesc = default;
+
+        DepthStencilView.GetDesc(ref depthStencilViewDesc);
+
+        DepthStencilDesc depthStencilDesc = default;
+
+        DepthStencilState.GetDesc(ref depthStencilDesc);
+
+        BackBuffer.Dispose();
+        RenderTargetView.Dispose();
+        MultiSampleBackBuffer.Dispose();    
+        MultiSampleRenderTargetView.Dispose();
+        DepthBuffer.NativeTexture.Dispose();
+        DepthStencilView.Dispose();
+        DepthStencilState.Dispose();
+
+        Context.Get().OMSetRenderTargets(0, null, null);
+
+        Camera.UpdateProjectionMatrix(70f, 0.2f, 1000f);
+
+        CreateViewport();
+
+        SilkMarshal.ThrowHResult(SwapChain.ResizeBuffers(0, (uint)Window.Size.X, (uint)Window.Size.Y, backBufferDesc.Format, 0));
+
+        CreateBackBuffer();
+
+        multiSampleBackBufferDesc.Width = (uint)Window.Size.X;
+        multiSampleBackBufferDesc.Height = (uint)Window.Size.Y;
+
+        depthBufferDesc.Width = (uint)Window.Size.X;
+        depthBufferDesc.Height = (uint)Window.Size.Y;
+
+        DepthBuffer = new Texture2D(Device, depthBufferDesc, TextureType.DepthBuffer);
+
+        SilkMarshal.ThrowHResult(Device.CreateDepthStencilView(DepthBuffer.NativeTexture, depthStencilViewDesc, ref DepthStencilView));
+
+        SilkMarshal.ThrowHResult(Device.CreateDepthStencilState(depthStencilDesc, ref DepthStencilState));
+    }
+
+    private void CreateDeviceAndSwapChain()
     {
         SilkMarshal.ThrowHResult
         (
@@ -180,10 +232,9 @@ public unsafe class Renderer : IDisposable
             SampleDesc = new SampleDesc(1, 0),
         };
 
-
         SilkMarshal.ThrowHResult(DXGIProvider.DXGI.Value.CreateDXGIFactory(out ComPtr<IDXGIFactory2> dxgiFactory));
 
-        SilkMarshal.ThrowHResult(dxgiFactory.CreateSwapChainForHwnd(Device, window.Native!.Win32!.Value!.Hwnd, swapChainDesc, null, ref Unsafe.NullRef<IDXGIOutput>(), ref SwapChain));
+        SilkMarshal.ThrowHResult(dxgiFactory.CreateSwapChainForHwnd(Device, Window.Native!.Win32!.Value!.Hwnd, swapChainDesc, null, ref Unsafe.NullRef<IDXGIOutput>(), ref SwapChain));
 
         dxgiFactory.Dispose();
     }
@@ -216,9 +267,9 @@ public unsafe class Renderer : IDisposable
         SilkMarshal.ThrowHResult(Device.CreateRenderTargetView(MultiSampleBackBuffer.NativeTexture, multiSampleRenderTargetViewDesc, ref MultiSampleRenderTargetView));
     }
 
-    private void CreateDepthBuffer(IWindow window)
+    private void CreateDepthBuffer()
     {
-        DepthBuffer = new Texture2D(this, window.Size.X, window.Size.Y, TextureType.DepthBuffer, new SampleDesc(8, 0), BindFlag.DepthStencil | BindFlag.ShaderResource, Format.FormatR32Typeless, usage: Usage.Default);
+        DepthBuffer = new Texture2D(this, Window.Size.X, Window.Size.Y, TextureType.DepthBuffer, new SampleDesc(8, 0), BindFlag.DepthStencil | BindFlag.ShaderResource, Format.FormatR32Typeless, usage: Usage.Default);
 
         DepthStencilViewDesc depthStencilViewDesc = new DepthStencilViewDesc()
         {
@@ -238,19 +289,17 @@ public unsafe class Renderer : IDisposable
         SilkMarshal.ThrowHResult(Device.CreateDepthStencilState(depthStencilDesc, ref DepthStencilState));
     }
 
-    private void CreateViewport(IWindow window)
+    private void CreateViewport()
     {
-        Viewport viewport = new Viewport()
+        Viewport = new Viewport()
         {
             TopLeftX = 0,
             TopLeftY = 0,
-            Width = window.Size.X,
-            Height = window.Size.Y,
+            Width = Window.Size.X,
+            Height = Window.Size.Y,
             MinDepth = 0.0f,
             MaxDepth = 1.0f,
         };
-
-        Viewport = viewport;
     }
 
     public void Dispose()

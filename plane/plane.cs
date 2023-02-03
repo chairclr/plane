@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using plane.Diagnostics;
 using plane.Graphics;
 using Silk.NET.Direct3D11;
 using Silk.NET.Maths;
@@ -16,6 +17,10 @@ public abstract class Plane : IDisposable
 
     public double PreciseDeltaTime { get; private set; }
 
+    private bool PendingResize = false;
+
+    private Vector2D<int> PendingResizeSize = Vector2D<int>.Zero;
+
     public Plane(string windowName)
     {
         Window = Silk.NET.Windowing.Window.Create(new WindowOptions()
@@ -31,11 +36,28 @@ public abstract class Plane : IDisposable
         Window.Load += InternalLoad;
 
         Window.Render += InternalRender;
+
+        Window.Resize += InternalResize;
     }
 
     public void Run()
     {
         Window.Run();
+    }
+
+    public virtual void Load()
+    {
+
+    }
+
+    public virtual void Render()
+    {
+
+    }
+
+    public virtual void Update()
+    {
+
     }
 
     private void InternalLoad()
@@ -53,8 +75,14 @@ public abstract class Plane : IDisposable
 
         DeltaTime = (float)deltaTime;
 
-
         Renderer ??= new Renderer(Window);
+
+        if (PendingResize)
+        {
+            PendingResize = false;
+
+            Resize();
+        }
 
         Update();
 
@@ -63,19 +91,16 @@ public abstract class Plane : IDisposable
         Render();
     }
 
-    public virtual void Load()
+    private void InternalResize(Vector2D<int> size)
     {
+        PendingResize = true;
 
+        PendingResizeSize = size;
     }
 
-    public virtual void Render()
+    private void Resize()
     {
-
-    }
-
-    public virtual void Update()
-    {
-
+        Renderer?.Resize();
     }
 
     public void Dispose()

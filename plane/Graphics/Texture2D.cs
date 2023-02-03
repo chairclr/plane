@@ -202,7 +202,7 @@ public unsafe class Texture2D : IDisposable
         GC.SuppressFinalize(this);
 
         NativeTexture.Dispose();
-        ShaderResourceView.Dispose();
+        _shaderResourceView.Dispose();
     }
 
     public static Texture2D LoadFromFile(Renderer renderer, string path)

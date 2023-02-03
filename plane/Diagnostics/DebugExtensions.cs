@@ -9,11 +9,14 @@ public static class DebugExtensions
 {
     private static readonly HashSet<(ComPtr<ID3D11InfoQueue>, Action<Direct3D11Message>, object)> PinnedInfoQueues = new HashSet<(ComPtr<ID3D11InfoQueue>, Action<Direct3D11Message>, object)>();
 
-    public static unsafe Task SetInfoQueueCallback(this ComPtr<ID3D11Device> device, Action<Direct3D11Message> callback, CancellationToken cancellationToken = default)
+    public static unsafe Task SetInfoQueueCallback<T>(this ComPtr<T> device, Action<Direct3D11Message> callback, CancellationToken cancellationToken = default)
+        where T : unmanaged, IComVtbl<ID3D11Device>, IComVtbl<T>
     {
         Debug.Assert(callback is not null, "Callback cannot be null");
 
-        SilkMarshal.ThrowHResult(device.QueryInterface(out ComPtr<ID3D11InfoQueue> infoQueue));
+        SilkMarshal.ThrowHResult(((ID3D11Device*)device.AsVtblPtr())->QueryInterface(out ComPtr<ID3D11InfoQueue> infoQueue));
+
+        infoQueue.ClearStorageFilter();
 
         object infoQueueLock = new object();
 
@@ -29,7 +32,7 @@ public static class DebugExtensions
 
                     if (numMessages == 0)
                     {
-                        Thread.Sleep(25);
+                        Thread.Sleep(5);
                         continue;
                     }
 
