@@ -5,6 +5,8 @@ namespace plane;
 
 public class Camera
 {
+    private readonly IWindow Window;
+
     private Vector3 _translation = Vector3.Zero;
 
     private Quaternion _rotation = Quaternion.Identity;
@@ -18,8 +20,6 @@ public class Camera
     private Matrix4x4 _viewMatrix;
 
     private bool ViewNeedsUpdate = false;
-
-    private readonly IWindow Window;
 
     public Matrix4x4 ProjectionMatrix { get; private set; }
 
