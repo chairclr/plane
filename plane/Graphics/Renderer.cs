@@ -68,15 +68,13 @@ public unsafe class Renderer : IDisposable
 
         CreateViewport();
 
-        RasterizerDesc rasterizerDesc = new RasterizerDesc()
+        Rasterizer = new Rasterizer(this, new RasterizerDesc()
         {
             MultisampleEnable = 1,
             AntialiasedLineEnable = 1,
             FillMode = FillMode.Solid,
             CullMode = CullMode.Back,
-        };
-
-        Rasterizer = new Rasterizer(this, rasterizerDesc);
+        });
 
         string planeRootFolder = Path.GetDirectoryName(typeof(plane.Plane).Assembly.Location)!;
 
