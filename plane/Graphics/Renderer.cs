@@ -54,7 +54,7 @@ public unsafe class Renderer : IDisposable
 
     private PixelShaderBuffer PixelShaderBufferData;
 
-    private Buffer<PixelShaderBuffer> PixelShaderBuffer;
+    private readonly Buffer<PixelShaderBuffer> PixelShaderBuffer;
 
     public Renderer(IWindow window)
     {
@@ -125,19 +125,18 @@ public unsafe class Renderer : IDisposable
         Context.IASetInputLayout(VertexShader!.NativeInputLayout);
         Context.IASetPrimitiveTopology(D3DPrimitiveTopology.D3D10PrimitiveTopologyTrianglelist);
 
-        Context.RSSetState(Rasterizer!.RasterizerState);
+        Rasterizer!.Bind();
         Context.RSSetViewports(1, Viewport);
 
         Context.PSSetSamplers(0, 1, ref PixelShaderSampler);
 
-        Context.VSSetShader(VertexShader!.NativeShader, null, 0);
-        Context.PSSetShader(PixelShader!.NativeShader, null, 0);
-        Context.GSSetShader(ref Unsafe.NullRef<ID3D11GeometryShader>(), null, 0);
+        VertexShader!.Bind(this);
+        PixelShader!.Bind(this);
 
         PixelShaderBufferData.TimeElapsed += 1f / 144f;
 
-        PixelShaderBuffer.WriteData(this, ref PixelShaderBufferData);
-        Context.PSSetConstantBuffers(0, 1, ref PixelShaderBuffer.DataBuffer);
+        PixelShaderBuffer.WriteData(ref PixelShaderBufferData);
+        PixelShaderBuffer.Bind(0, BindTo.PixelShader);
 
         for (int i = 0; i < RenderObjects.Count; i++)
         {
@@ -220,7 +219,7 @@ public unsafe class Renderer : IDisposable
         );
 
 #if DEBUG
-        Device.SetInfoQueueCallback((Direct3D11Message message) => Logger.Log.WriteLine(message.Description, message.LogSeverity, DateTime.Now));
+        Device.SetInfoQueueCallback((D3DDebugMessage message) => Logger.Log.WriteLine(message.Description, message.LogSeverity, DateTime.Now));
 #endif
 
         SwapChainDesc1 swapChainDesc = new SwapChainDesc1()
@@ -229,7 +228,7 @@ public unsafe class Renderer : IDisposable
             Format = Format.FormatR8G8B8A8Unorm,
             BufferUsage = DXGI.UsageRenderTargetOutput,
             SwapEffect = SwapEffect.FlipDiscard,
-            SampleDesc = new SampleDesc(1, 0),
+            SampleDesc = new SampleDesc(1, 0)
         };
 
         SilkMarshal.ThrowHResult(DXGIProvider.DXGI.Value.CreateDXGIFactory(out ComPtr<IDXGIFactory2> dxgiFactory));

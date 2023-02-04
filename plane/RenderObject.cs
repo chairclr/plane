@@ -36,9 +36,9 @@ public abstract class RenderObject : IDisposable
         VertexShaderData.World = Matrix4x4.Transpose(VertexShaderData.World);
         VertexShaderData.ViewProjection = Matrix4x4.Transpose(VertexShaderData.ViewProjection);
 
-        VertexShaderDataBuffer.WriteData(Renderer, ref VertexShaderData);
+        VertexShaderDataBuffer.WriteData(ref VertexShaderData);
 
-        Renderer.Context.VSSetConstantBuffers(0, 1, ref VertexShaderDataBuffer.DataBuffer);
+        VertexShaderDataBuffer.Bind(0, BindTo.VertexShader);
     }
 
     public void Dispose()

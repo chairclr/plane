@@ -19,8 +19,6 @@ public abstract class Plane : IDisposable
 
     private bool PendingResize = false;
 
-    private Vector2D<int> PendingResizeSize = Vector2D<int>.Zero;
-
     public Plane(string windowName)
     {
         Window = Silk.NET.Windowing.Window.Create(new WindowOptions()
@@ -94,8 +92,6 @@ public abstract class Plane : IDisposable
     private void InternalResize(Vector2D<int> size)
     {
         PendingResize = true;
-
-        PendingResizeSize = size;
     }
 
     private void Resize()

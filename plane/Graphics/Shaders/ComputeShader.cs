@@ -13,6 +13,11 @@ public class ComputeShader : Shader, IDisposable
         SilkMarshal.ThrowHResult(renderer.Device.CreateComputeShader(ShaderData.GetBufferPointer(), ShaderData.GetBufferSize(), ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
     }
 
+    public unsafe override void Bind(Renderer renderer)
+    {
+        renderer.Context.CSSetShader(NativeShader, null, 0);
+    }
+
     public new void Dispose()
     {
         GC.SuppressFinalize(this);

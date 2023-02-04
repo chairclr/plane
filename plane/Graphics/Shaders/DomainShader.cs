@@ -13,6 +13,11 @@ public class DomainShader : Shader, IDisposable
         SilkMarshal.ThrowHResult(renderer.Device.CreateDomainShader(ShaderData.GetBufferPointer(), ShaderData.GetBufferSize(), ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
     }
 
+    public unsafe override void Bind(Renderer renderer)
+    {
+        renderer.Context.DSSetShader(NativeShader, null, 0);
+    }
+
     public new void Dispose()
     {
         GC.SuppressFinalize(this);

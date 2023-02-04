@@ -8,6 +8,8 @@ public abstract class Shader : IDisposable
 
     internal abstract void Create(Renderer renderer);
 
+    public abstract void Bind(Renderer renderer);
+
     public virtual void Dispose()
     {
         GC.SuppressFinalize(this);

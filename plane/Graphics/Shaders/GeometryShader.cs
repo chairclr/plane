@@ -13,6 +13,11 @@ public class GeometryShader : Shader, IDisposable
         SilkMarshal.ThrowHResult(renderer.Device.CreateGeometryShader(ShaderData.GetBufferPointer(), ShaderData.GetBufferSize(), ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
     }
 
+    public unsafe override void Bind(Renderer renderer)
+    {
+        renderer.Context.GSSetShader(NativeShader, null, 0);
+    }
+
     public new void Dispose()
     {
         GC.SuppressFinalize(this);

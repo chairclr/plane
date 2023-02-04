@@ -13,6 +13,11 @@ public class HullShader : Shader, IDisposable
         SilkMarshal.ThrowHResult(renderer.Device.CreateHullShader(ShaderData.GetBufferPointer(), ShaderData.GetBufferSize(), ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
     }
 
+    public unsafe override void Bind(Renderer renderer)
+    {
+        renderer.Context.HSSetShader(NativeShader, null, 0);
+    }
+
     public new void Dispose()
     {
         GC.SuppressFinalize(this);

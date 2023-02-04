@@ -5,7 +5,7 @@ namespace plane.Graphics;
 
 public class Rasterizer
 {
-    private ComPtr<ID3D11Device> Device = default;
+    private Renderer Renderer;
 
     internal ComPtr<ID3D11RasterizerState> RasterizerState = default;
 
@@ -13,17 +13,22 @@ public class Rasterizer
 
     public unsafe Rasterizer(Renderer renderer, RasterizerDesc desc)
     {
-        Device = renderer.Device;
+        Renderer = renderer;
 
         Description = desc;
 
         Recreate(Description);
     }
 
+    public void Bind()
+    {
+        Renderer.Context.RSSetState(RasterizerState);
+    }
+
     public unsafe void Recreate(RasterizerDesc desc)
     {
         Description = desc;
 
-        SilkMarshal.ThrowHResult(Device.CreateRasterizerState(Description, ref RasterizerState));
+        SilkMarshal.ThrowHResult(Renderer.Device.CreateRasterizerState(Description, ref RasterizerState));
     }
 }

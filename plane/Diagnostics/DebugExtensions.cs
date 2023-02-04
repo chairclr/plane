@@ -7,9 +7,9 @@ namespace plane.Diagnostics;
 
 public static class DebugExtensions
 {
-    private static readonly HashSet<(ComPtr<ID3D11InfoQueue>, Action<Direct3D11Message>, object)> PinnedInfoQueues = new HashSet<(ComPtr<ID3D11InfoQueue>, Action<Direct3D11Message>, object)>();
+    private static readonly HashSet<(ComPtr<ID3D11InfoQueue>, Action<D3DDebugMessage>, object)> PinnedInfoQueues = new HashSet<(ComPtr<ID3D11InfoQueue>, Action<D3DDebugMessage>, object)>();
 
-    public static unsafe Task SetInfoQueueCallback<T>(this ComPtr<T> device, Action<Direct3D11Message> callback, CancellationToken cancellationToken = default)
+    public static unsafe Task SetInfoQueueCallback<T>(this ComPtr<T> device, Action<D3DDebugMessage> callback, CancellationToken cancellationToken = default)
         where T : unmanaged, IComVtbl<ID3D11Device>, IComVtbl<T>
     {
         Debug.Assert(callback is not null, "Callback cannot be null");
@@ -47,7 +47,7 @@ public static class DebugExtensions
                             ref Message msg = ref Unsafe.As<byte, Message>(ref msgBytes[0]);
                             SilkMarshal.ThrowHResult(infoQueue.GetMessageA(i, ref msg, ref msgByteLength));
 
-                            callback(new Direct3D11Message(msg));
+                            callback(new D3DDebugMessage(msg));
                         }
 
                         infoQueue.ClearStoredMessages();
@@ -66,7 +66,7 @@ public static class DebugExtensions
         // Ensure all info queues are flushed when an exception occurs
         AppDomain.CurrentDomain.UnhandledException += (e, x) =>
         {
-            foreach ((ComPtr<ID3D11InfoQueue> infoQueue, Action<Direct3D11Message> callback, object infoQueueLock) in PinnedInfoQueues)
+            foreach ((ComPtr<ID3D11InfoQueue> infoQueue, Action<D3DDebugMessage> callback, object infoQueueLock) in PinnedInfoQueues)
             {
                 ulong numMessages = infoQueue.GetNumStoredMessages();
 
@@ -86,7 +86,7 @@ public static class DebugExtensions
                         ref Message msg = ref Unsafe.As<byte, Message>(ref msgBytes[0]);
                         SilkMarshal.ThrowHResult(infoQueue.GetMessageA(i, ref msg, ref msgByteLength));
 
-                        callback(new Direct3D11Message(msg));
+                        callback(new D3DDebugMessage(msg));
                     }
 
                     infoQueue.ClearStoredMessages();

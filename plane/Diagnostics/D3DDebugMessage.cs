@@ -7,7 +7,7 @@ using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
 
 namespace plane.Diagnostics;
-public class Direct3D11Message
+public class D3DDebugMessage
 {
     public readonly string? Description;
 
@@ -19,7 +19,7 @@ public class Direct3D11Message
 
     public readonly MessageID ID;
 
-    public unsafe Direct3D11Message(in Message message)
+    public unsafe D3DDebugMessage(in Message message)
     {
         Description = SilkMarshal.PtrToString((nint)message.PDescription);
         Severity = message.Severity;

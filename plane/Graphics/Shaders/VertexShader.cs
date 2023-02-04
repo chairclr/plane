@@ -20,6 +20,11 @@ public class VertexShader : Shader, IDisposable
         SilkMarshal.ThrowHResult(renderer.Device.CreateInputLayout(inputLayout[0], (uint)inputLayout.Length, ShaderData.GetBufferPointer(), ShaderData.GetBufferSize(), ref NativeInputLayout));
     }
 
+    public unsafe override void Bind(Renderer renderer)
+    {
+        renderer.Context.VSSetShader(NativeShader, null, 0);
+    }
+
     public new void Dispose()
     {
         GC.SuppressFinalize(this);

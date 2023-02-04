@@ -8,7 +8,7 @@ namespace plane.Graphics;
 public unsafe class Buffer<T> : IDisposable 
     where T : unmanaged 
 {
-    public ComPtr<ID3D11Device> Device = default;
+    public Renderer Renderer;
 
     public ComPtr<ID3D11Buffer> DataBuffer = default;
 
@@ -29,10 +29,13 @@ public unsafe class Buffer<T> : IDisposable
 
     public Buffer(Renderer renderer, ReadOnlySpan<T> data, BindFlag bindFlag, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, ResourceMiscFlag resourceMiscFlags = ResourceMiscFlag.None)
     {
+        Renderer = renderer;
+
         Length = (uint)data.Length;
+
         Stride = (uint)Unsafe.SizeOf<T>();
+
         Size = Length * Stride;
-        Device = renderer.Device;
 
         BufferDesc bufferDesc = new BufferDesc()
         {
@@ -50,7 +53,7 @@ public unsafe class Buffer<T> : IDisposable
                 PSysMem = bufferData
             };
 
-            SilkMarshal.ThrowHResult(Device.CreateBuffer(bufferDesc, bufferSubresource, ref DataBuffer));
+            SilkMarshal.ThrowHResult(Renderer.Device.CreateBuffer(bufferDesc, bufferSubresource, ref DataBuffer));
         }
     }
 
@@ -60,35 +63,62 @@ public unsafe class Buffer<T> : IDisposable
 
     }
 
-    public void WriteData(Renderer renderer, ReadOnlySpan<T> data)
+    public void WriteData(ReadOnlySpan<T> data)
     {
         MappedSubresource mappedSubresource = new MappedSubresource();
 
-        SilkMarshal.ThrowHResult(renderer.Context.Map(DataBuffer, 0, Map.WriteDiscard, 0, ref mappedSubresource));
+        SilkMarshal.ThrowHResult(Renderer.Context.Map(DataBuffer, 0, Map.WriteDiscard, 0, ref mappedSubresource));
 
         Span<T> subresourceSpan = new Span<T>(mappedSubresource.PData, data.Length);
 
         data.CopyTo(subresourceSpan);
 
-        renderer.Context.Unmap(DataBuffer, 0);
+        Renderer.Context.Unmap(DataBuffer, 0);
     }
 
-    public void WriteData(Renderer renderer, ReadOnlySpan<T> data, uint subresource, Map mapType, MapFlag mapFlags)
+    public void WriteData(ReadOnlySpan<T> data, uint subresource, Map mapType, MapFlag mapFlags)
     {
         MappedSubresource mappedSubresource = new MappedSubresource();
 
-        renderer.Context.Map(DataBuffer, subresource, mapType, (uint)mapFlags, ref mappedSubresource);
+        Renderer.Context.Map(DataBuffer, subresource, mapType, (uint)mapFlags, ref mappedSubresource);
 
         Span<T> subresourceSpan = new Span<T>(mappedSubresource.PData, data.Length);
 
         data.CopyTo(subresourceSpan);
 
-        renderer.Context.Unmap(DataBuffer, 0);
+        Renderer.Context.Unmap(DataBuffer, 0);
     }
 
-    public void WriteData(Renderer renderer, ref T data) => WriteData(renderer, new ReadOnlySpan<T>(Unsafe.AsPointer(ref data), 1));
+    public void WriteData(ref T data) => WriteData(new ReadOnlySpan<T>(Unsafe.AsPointer(ref data), 1));
 
-    public void WriteData(Renderer renderer, ref T data, uint subresource, Map mapType, MapFlag mapFlags) => WriteData(renderer, new ReadOnlySpan<T>(Unsafe.AsPointer(ref data), 1), subresource, mapType, mapFlags);
+    public void WriteData(ref T data, uint subresource, Map mapType, MapFlag mapFlags) => WriteData(new ReadOnlySpan<T>(Unsafe.AsPointer(ref data), 1), subresource, mapType, mapFlags);
+
+    public void Bind(int slot, BindTo to)
+    {
+        switch (to)
+        {
+            case BindTo.VertexShader:
+                Renderer.Context.VSSetConstantBuffers((uint)slot, 1, ref DataBuffer);
+                break;
+            case BindTo.PixelShader:
+                Renderer.Context.PSSetConstantBuffers((uint)slot, 1, ref DataBuffer);
+                break;
+            case BindTo.GeometryShader:
+                Renderer.Context.GSSetConstantBuffers((uint)slot, 1, ref DataBuffer);
+                break;
+            case BindTo.ComputeShader:
+                Renderer.Context.CSSetConstantBuffers((uint)slot, 1, ref DataBuffer);
+                break;
+            case BindTo.HullShader:
+                Renderer.Context.HSSetConstantBuffers((uint)slot, 1, ref DataBuffer);
+                break;
+            case BindTo.DomainShader:
+                Renderer.Context.DSSetConstantBuffers((uint)slot, 1, ref DataBuffer);
+                break;
+            default:
+                throw new ArgumentException($"Invalid binding target {to}", nameof(to));
+        }
+    }
 
     public void Dispose()
     {
