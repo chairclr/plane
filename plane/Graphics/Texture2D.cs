@@ -45,7 +45,7 @@ public unsafe class Texture2D : IDisposable
 
         TextureType = textureType;
 
-        SilkMarshal.ThrowHResult(device.Get().CreateTexture2D(desc, null, NativeTexture.GetAddressOf()));
+        SilkMarshal.ThrowHResult(device.CreateTexture2D(desc, null, ref NativeTexture));
     }
 
     public Texture2D(Renderer renderer, int width, int height, TextureType textureType, SampleDesc? sampleDesc = null, BindFlag bindFlags = BindFlag.ShaderResource, Format format = Format.FormatR8G8B8A8Unorm, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, uint arraySize = 1, uint mipLevels = 1, uint miscFlag = 0)
@@ -72,7 +72,7 @@ public unsafe class Texture2D : IDisposable
             MipLevels = mipLevels
         };
 
-        SilkMarshal.ThrowHResult(Device.Get().CreateTexture2D(desc, null, NativeTexture.GetAddressOf()));
+        SilkMarshal.ThrowHResult(Device.CreateTexture2D(desc, null, ref NativeTexture));
     }
 
     public Texture2D(Renderer renderer, int width, int height, TextureType textureType, SubresourceData subresourceData, SampleDesc? sampleDesc = null, BindFlag bindFlags = BindFlag.ShaderResource, Format format = Format.FormatR8G8B8A8Unorm, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, uint arraySize = 1, uint mipLevels = 1, uint miscFlag = 0)
@@ -99,7 +99,7 @@ public unsafe class Texture2D : IDisposable
             MipLevels = mipLevels
         };
 
-        SilkMarshal.ThrowHResult(Device.Get().CreateTexture2D(desc, subresourceData, NativeTexture.GetAddressOf()));
+        SilkMarshal.ThrowHResult(Device.CreateTexture2D(desc, subresourceData, ref NativeTexture));
     }
 
     public Texture2D(Renderer renderer, Image<Rgba32> image, TextureType textureType, SampleDesc? sampleDesc = null, BindFlag bindFlags = BindFlag.ShaderResource, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, uint arraySize = 1, uint mipLevels = 1, uint miscFlag = 0)
@@ -136,7 +136,7 @@ public unsafe class Texture2D : IDisposable
             SysMemPitch = (uint)(image.Width * Unsafe.SizeOf<Rgba32>()),
         };
 
-        SilkMarshal.ThrowHResult(Device.Get().CreateTexture2D(desc, subresourceData, NativeTexture.GetAddressOf()));
+        SilkMarshal.ThrowHResult(Device.CreateTexture2D(desc, subresourceData, ref NativeTexture));
     }
 
     public Texture2D(Renderer renderer, int width, int height, Usage usage = Usage.Default)
@@ -164,16 +164,11 @@ public unsafe class Texture2D : IDisposable
         TextureType = textureType;
     }
 
-    internal ID3D11Resource* AsResource()
-    {
-        return (ID3D11Resource*)NativeTexture.GetPinnableReference();
-    }
-
     internal Texture2DDesc GetTextureDescription()
     {
         Texture2DDesc textureDesc = new Texture2DDesc();
 
-        NativeTexture.Get().GetDesc(ref textureDesc);
+        NativeTexture.GetDesc(ref textureDesc);
 
         return textureDesc;
     }
@@ -192,7 +187,7 @@ public unsafe class Texture2D : IDisposable
 
         shaderResourceViewDesc.Texture2D.MipLevels = textureDesc.MipLevels;
 
-        SilkMarshal.ThrowHResult(Device.Get().CreateShaderResourceView(this.AsResource(), shaderResourceViewDesc, resourceView.GetAddressOf()));
+        SilkMarshal.ThrowHResult(Device.CreateShaderResourceView(NativeTexture, shaderResourceViewDesc, ref resourceView));
 
         return resourceView;
     }
@@ -202,6 +197,7 @@ public unsafe class Texture2D : IDisposable
         GC.SuppressFinalize(this);
 
         NativeTexture.Dispose();
+
         _shaderResourceView.Dispose();
     }
 
