@@ -7,7 +7,7 @@ using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
 
 namespace plane.Graphics;
-public class Sampler
+public class Sampler : IDisposable
 {
     private readonly Renderer Renderer;
 
@@ -56,5 +56,12 @@ public class Sampler
         Description = desc;
 
         SilkMarshal.ThrowHResult(Renderer.Device.CreateSamplerState(desc, ref NativeSamplerState));
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+
+        NativeSamplerState.Dispose();
     }
 }

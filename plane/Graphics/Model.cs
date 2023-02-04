@@ -6,6 +6,7 @@ using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using plane.Diagnostics;
 using plane.Graphics.Providers;
 using Silk.NET.Assimp;
 using Silk.NET.Direct3D.Compilers;
@@ -148,6 +149,7 @@ public class Model : IDisposable
             if (ret == Return.Success)
             {
                 Texture2D planeTexture = Texture2D.GetSinglePixelTexture(Renderer, new Rgba32(color));
+                planeTexture.NativeTexture.SetObjectName($"{scene.MName.AsString}MaterialDiffuseColor");    
                 textures.Add(planeTexture);
             }
         }
@@ -165,8 +167,9 @@ public class Model : IDisposable
                         fileRelative = fileRelative.Remove(0, 1);
 
                     string fullPath = Path.Combine(ModelImportDirectory!, fileRelative);
-
-                    textures.Add(Texture2D.LoadFromFile(Renderer, fullPath));
+                    Texture2D planeTexture = Texture2D.LoadFromFile(Renderer, fullPath);
+                    planeTexture.NativeTexture.SetObjectName($"{scene.MName.AsString}MaterialTextureBase");
+                    textures.Add(planeTexture);
                 }
             }
         }

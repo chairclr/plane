@@ -45,9 +45,9 @@ public class Mesh : IDisposable
             }
         }
 
-        Renderer.Context.Get().IASetVertexBuffers(0, 1, ref VertexBuffer.DataBuffer, VertexBuffer.Stride, offset);
-        Renderer.Context.Get().IASetIndexBuffer(IndexBuffer.DataBuffer, Format.FormatR32Uint, 0);
-        Renderer.Context.Get().DrawIndexed(IndexBuffer.Length, 0, 0);
+        Renderer.Context.IASetVertexBuffers(0, 1, ref VertexBuffer.DataBuffer, VertexBuffer.Stride, offset);
+        Renderer.Context.IASetIndexBuffer(IndexBuffer.DataBuffer, Format.FormatR32Uint, 0);
+        Renderer.Context.DrawIndexed(IndexBuffer.Length, 0, 0);
     }
 
     public void Dispose()

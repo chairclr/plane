@@ -3,7 +3,7 @@ using Silk.NET.Direct3D11;
 
 namespace plane.Graphics;
 
-public class Rasterizer
+public class Rasterizer : IDisposable
 {
     private readonly Renderer Renderer;
 
@@ -30,5 +30,12 @@ public class Rasterizer
         Description = desc;
 
         SilkMarshal.ThrowHResult(Renderer.Device.CreateRasterizerState(Description, ref RasterizerState));
+    }
+
+    public void Dispose() 
+    {
+        GC.SuppressFinalize(this);
+
+        RasterizerState.Dispose();
     }
 }

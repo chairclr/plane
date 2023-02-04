@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
@@ -9,12 +10,16 @@ public static class DebugExtensions
 {
     private static readonly HashSet<(ComPtr<ID3D11InfoQueue>, Action<D3DDebugMessage>, object)> PinnedInfoQueues = new HashSet<(ComPtr<ID3D11InfoQueue>, Action<D3DDebugMessage>, object)>();
 
+    private static Guid _D3DDebugObjectName = new Guid(0x429b8c22, 0x9188, 0x4b0c, 0x87, 0x42, 0xac, 0xb0, 0xbf, 0x85, 0xc2, 0x00);
+
+    public static ref Guid D3DDebugObjectName => ref _D3DDebugObjectName;
+
     public static unsafe Task SetInfoQueueCallback<T>(this ComPtr<T> device, Action<D3DDebugMessage> callback, CancellationToken cancellationToken = default)
         where T : unmanaged, IComVtbl<ID3D11Device>, IComVtbl<T>
     {
         Debug.Assert(callback is not null, "Callback cannot be null");
 
-        SilkMarshal.ThrowHResult(((ID3D11Device*)device.AsVtblPtr())->QueryInterface(out ComPtr<ID3D11InfoQueue> infoQueue));
+        SilkMarshal.ThrowHResult(ComPtr.Downcast<T, ID3D11Device>(device).QueryInterface(out ComPtr<ID3D11InfoQueue> infoQueue));
 
         infoQueue.ClearStorageFilter();
 
@@ -59,6 +64,21 @@ public static class DebugExtensions
                 infoQueue.Dispose();
             }
         , cancellationToken);
+    }
+
+    private unsafe delegate int SetPrivateData<T>(ref T pThis, ref Guid guid, uint DataSize, void* pData)
+        where T : unmanaged, IComVtbl<T>;
+
+    public static unsafe void SetObjectName<T>(this ComPtr<T> obj, string name)
+        where T : unmanaged, IComVtbl<T>
+    {
+        MethodInfo setPrivateDataMethod = typeof(T).GetMethod("SetPrivateData", new Type[] { typeof(Guid).MakeByRefType(), typeof(uint), typeof(void*) })!;
+
+        nint stringData = SilkMarshal.StringToPtr(name);
+
+        setPrivateDataMethod.CreateDelegate<SetPrivateData<T>>().Invoke(ref obj.Get(), ref D3DDebugObjectName, (uint)name.Length, (void*)stringData);
+
+        SilkMarshal.FreeString(stringData);
     }
 
     static unsafe DebugExtensions()
