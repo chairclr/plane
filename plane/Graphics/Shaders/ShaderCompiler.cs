@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using plane.Diagnostics;
 using plane.Graphics.Providers;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D.Compilers;
@@ -61,12 +62,17 @@ public class ShaderCompiler
         {
             if (shaderErrors.Handle is not null)
             {
-                byte* stringPointer = (byte*)shaderErrors.Get().GetBufferPointer();
-                int stringLength = (int)shaderErrors.Get().GetBufferSize();
+                byte* stringPointer = (byte*)shaderErrors.GetBufferPointer();
+                int stringLength = (int)shaderErrors.GetBufferSize();
 
-                string compilerErrors = Encoding.UTF8.GetString(stringPointer, stringLength);
+                string compilerErrors = Encoding.UTF8.GetString(stringPointer, stringLength - 1); // - 1 for null terminator
 
                 shaderErrors.Dispose();
+
+                foreach (string error in compilerErrors.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    Logger.WriteLine(error, LogSeverity.Error);
+                }
 
                 throw new Exception($"Failed to compile shader.\n'{compilerErrors}'");
             }
@@ -102,12 +108,17 @@ public class ShaderCompiler
         {
             if (shaderErrors.Handle is not null)
             {
-                byte* stringPointer = (byte*)shaderErrors.Get().GetBufferPointer();
-                int stringLength = (int)shaderErrors.Get().GetBufferSize();
+                byte* stringPointer = (byte*)shaderErrors.GetBufferPointer();
+                int stringLength = (int)shaderErrors.GetBufferSize();
 
-                string compilerErrors = Encoding.UTF8.GetString(stringPointer, stringLength);
+                string compilerErrors = Encoding.UTF8.GetString(stringPointer, stringLength - 1);  // - 1 for null terminator
 
                 shaderErrors.Dispose();
+
+                foreach (string error in compilerErrors.Split('\n'))
+                {
+                    Logger.WriteLine(error, LogSeverity.Error);
+                }
 
                 throw new Exception($"Failed to compile shader.\n'{compilerErrors}'");
             }

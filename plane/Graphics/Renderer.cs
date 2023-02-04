@@ -78,7 +78,7 @@ public unsafe class Renderer : IDisposable
 
         Rasterizer = new Rasterizer(this, rasterizerDesc);
 
-        string planeRootFolder = Path.GetDirectoryName(typeof(Plane).Assembly.Location)!;
+        string planeRootFolder = Path.GetDirectoryName(typeof(plane.Plane).Assembly.Location)!;
 
         VertexShader = ShaderCompiler.CompileFromFile<VertexShader>(Path.Combine(planeRootFolder, "Shaders/VertexShader.hlsl"), "VSMain", ShaderModel.VertexShader5_0);
         VertexShader.Create(this);
@@ -219,7 +219,7 @@ public unsafe class Renderer : IDisposable
         );
 
 #if DEBUG
-        Device.SetInfoQueueCallback((D3DDebugMessage message) => Logger.Log.WriteLine(message.Description, message.LogSeverity, DateTime.Now));
+        Device.SetInfoQueueCallback((D3DDebugMessage message) => Logger.WriteLine(message.Description, message.LogSeverity));
 #endif
 
         SwapChainDesc1 swapChainDesc = new SwapChainDesc1()
