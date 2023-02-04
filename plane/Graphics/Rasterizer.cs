@@ -5,7 +5,7 @@ namespace plane.Graphics;
 
 public class Rasterizer
 {
-    private Renderer Renderer;
+    private readonly Renderer Renderer;
 
     internal ComPtr<ID3D11RasterizerState> RasterizerState = default;
 

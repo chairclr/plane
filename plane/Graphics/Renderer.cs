@@ -188,7 +188,7 @@ public unsafe class Renderer : IDisposable
         depthBufferDesc.Width = (uint)Window.Size.X;
         depthBufferDesc.Height = (uint)Window.Size.Y;
 
-        DepthBuffer = new Texture2D(Device, depthBufferDesc, TextureType.DepthBuffer);
+        DepthBuffer = new Texture2D(this, depthBufferDesc, TextureType.DepthBuffer);
 
         SilkMarshal.ThrowHResult(Device.CreateDepthStencilView(DepthBuffer.NativeTexture, depthStencilViewDesc, ref DepthStencilView));
 

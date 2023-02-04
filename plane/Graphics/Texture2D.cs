@@ -12,11 +12,9 @@ namespace plane.Graphics;
 
 public unsafe class Texture2D : IDisposable
 {
-    public static ref Guid Guid => ref SilkMarshal.GuidOf<ID3D11Texture2D>();
+    private readonly Renderer Renderer;
 
     public readonly TextureType TextureType;
-
-    internal ComPtr<ID3D11Device> Device = default;
 
     internal ComPtr<ID3D11Texture2D> NativeTexture = default;
 
@@ -39,18 +37,18 @@ public unsafe class Texture2D : IDisposable
 
     
 
-    internal Texture2D(ComPtr<ID3D11Device> device, Texture2DDesc desc, TextureType textureType)
+    internal Texture2D(Renderer renderer, Texture2DDesc desc, TextureType textureType)
     {
-        Device = device;
+        Renderer = renderer;
 
         TextureType = textureType;
 
-        SilkMarshal.ThrowHResult(device.CreateTexture2D(desc, null, ref NativeTexture));
+        SilkMarshal.ThrowHResult(Renderer.Device.CreateTexture2D(desc, null, ref NativeTexture));
     }
 
     public Texture2D(Renderer renderer, int width, int height, TextureType textureType, SampleDesc? sampleDesc = null, BindFlag bindFlags = BindFlag.ShaderResource, Format format = Format.FormatR8G8B8A8Unorm, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, uint arraySize = 1, uint mipLevels = 1, uint miscFlag = 0)
     {
-        Device = renderer.Device;
+        Renderer = renderer;
 
         TextureType = textureType;
 
@@ -72,12 +70,12 @@ public unsafe class Texture2D : IDisposable
             MipLevels = mipLevels
         };
 
-        SilkMarshal.ThrowHResult(Device.CreateTexture2D(desc, null, ref NativeTexture));
+        SilkMarshal.ThrowHResult(Renderer.Device.CreateTexture2D(desc, null, ref NativeTexture));
     }
 
     public Texture2D(Renderer renderer, int width, int height, TextureType textureType, SubresourceData subresourceData, SampleDesc? sampleDesc = null, BindFlag bindFlags = BindFlag.ShaderResource, Format format = Format.FormatR8G8B8A8Unorm, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, uint arraySize = 1, uint mipLevels = 1, uint miscFlag = 0)
     {
-        Device = renderer.Device;
+        Renderer = renderer;
 
         TextureType = textureType;
 
@@ -99,12 +97,12 @@ public unsafe class Texture2D : IDisposable
             MipLevels = mipLevels
         };
 
-        SilkMarshal.ThrowHResult(Device.CreateTexture2D(desc, subresourceData, ref NativeTexture));
+        SilkMarshal.ThrowHResult(Renderer.Device.CreateTexture2D(desc, subresourceData, ref NativeTexture));
     }
 
     public Texture2D(Renderer renderer, Image<Rgba32> image, TextureType textureType, SampleDesc? sampleDesc = null, BindFlag bindFlags = BindFlag.ShaderResource, Usage usage = Usage.Default, CpuAccessFlag cpuAccessFlags = CpuAccessFlag.None, uint arraySize = 1, uint mipLevels = 1, uint miscFlag = 0)
     {
-        Device = renderer.Device;
+        Renderer = renderer;
 
         TextureType = textureType;
 
@@ -136,7 +134,7 @@ public unsafe class Texture2D : IDisposable
             SysMemPitch = (uint)(image.Width * Unsafe.SizeOf<Rgba32>()),
         };
 
-        SilkMarshal.ThrowHResult(Device.CreateTexture2D(desc, subresourceData, ref NativeTexture));
+        SilkMarshal.ThrowHResult(Renderer.Device.CreateTexture2D(desc, subresourceData, ref NativeTexture));
     }
 
     public Texture2D(Renderer renderer, int width, int height, Usage usage = Usage.Default)
@@ -159,7 +157,7 @@ public unsafe class Texture2D : IDisposable
 
     public Texture2D(Renderer renderer, TextureType textureType)
     {
-        Device = renderer.Device;
+        Renderer = renderer;
 
         TextureType = textureType;
     }
@@ -187,7 +185,7 @@ public unsafe class Texture2D : IDisposable
 
         shaderResourceViewDesc.Texture2D.MipLevels = textureDesc.MipLevels;
 
-        SilkMarshal.ThrowHResult(Device.CreateShaderResourceView(NativeTexture, shaderResourceViewDesc, ref resourceView));
+        SilkMarshal.ThrowHResult(Renderer.Device.CreateShaderResourceView(NativeTexture, shaderResourceViewDesc, ref resourceView));
 
         return resourceView;
     }

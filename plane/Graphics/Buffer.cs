@@ -8,7 +8,7 @@ namespace plane.Graphics;
 public unsafe class Buffer<T> : IDisposable 
     where T : unmanaged 
 {
-    public Renderer Renderer;
+    private readonly Renderer Renderer;
 
     public ComPtr<ID3D11Buffer> DataBuffer = default;
 

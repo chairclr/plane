@@ -15,9 +15,9 @@ namespace plane.Graphics;
 
 public class Model : IDisposable
 {
-    public readonly List<Mesh> Meshes;
-
     private readonly Renderer Renderer;
+
+    public readonly List<Mesh> Meshes;
 
     private string? ModelImportDirectory;
 
