@@ -69,7 +69,8 @@ public class ShaderCompiler
 
                 shaderErrors.Dispose();
 
-                foreach (string error in compilerErrors.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                string[] errors = compilerErrors.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                foreach (string error in errors)
                 {
                     Logger.WriteLine(error, LogSeverity.Error);
                 }
@@ -115,7 +116,8 @@ public class ShaderCompiler
 
                 shaderErrors.Dispose();
 
-                foreach (string error in compilerErrors.Split('\n'))
+                string[] errors = compilerErrors.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                foreach (string error in errors)
                 {
                     Logger.WriteLine(error, LogSeverity.Error);
                 }
