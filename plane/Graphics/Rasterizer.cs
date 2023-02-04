@@ -17,7 +17,7 @@ public class Rasterizer
 
         Description = desc;
 
-        Recreate(Description);
+        Create(Description);
     }
 
     public void Bind()
@@ -25,7 +25,7 @@ public class Rasterizer
         Renderer.Context.RSSetState(RasterizerState);
     }
 
-    public unsafe void Recreate(RasterizerDesc desc)
+    public unsafe void Create(RasterizerDesc desc)
     {
         Description = desc;
 

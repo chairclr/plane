@@ -116,7 +116,7 @@ public unsafe class Buffer<T> : IDisposable
                 Renderer.Context.DSSetConstantBuffers((uint)slot, 1, ref DataBuffer);
                 break;
             default:
-                throw new ArgumentException($"Invalid binding target {to}", nameof(to));
+                throw new ArgumentException($"Invalid binding target {to}.", nameof(to));
         }
     }
 

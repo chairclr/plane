@@ -46,7 +46,7 @@ public unsafe class Renderer : IDisposable
 
     private readonly PixelShader? PixelShader;
 
-    private ComPtr<ID3D11SamplerState> PixelShaderSampler = default;
+    private Sampler PixelShaderSampler;
 
     public Camera Camera;
 
@@ -95,7 +95,7 @@ public unsafe class Renderer : IDisposable
         PixelShader = ShaderCompiler.CompileFromFile<PixelShader>(Path.Combine(planeRootFolder, "Shaders/PixelShader.hlsl"), "PSMain", ShaderModel.PixelShader5_0);
         PixelShader.Create(this);
 
-        SamplerDesc sampDesc = new SamplerDesc()
+        PixelShaderSampler = new Sampler(this, new SamplerDesc()
         {
             Filter = Filter.Anisotropic,
             AddressU = TextureAddressMode.Wrap,
@@ -103,10 +103,8 @@ public unsafe class Renderer : IDisposable
             AddressW = TextureAddressMode.Wrap,
             ComparisonFunc = ComparisonFunc.Never,
             MinLOD = 0,
-            MaxLOD = float.MaxValue,
-        };
-
-        SilkMarshal.ThrowHResult(Device.CreateSamplerState(sampDesc, ref PixelShaderSampler));
+            MaxLOD = float.MaxValue
+        });
 
         PixelShaderBuffer = new Buffer<PixelShaderBuffer>(this, ref PixelShaderBufferData, BindFlag.ConstantBuffer, Usage.Dynamic, CpuAccessFlag.Write);
 
@@ -128,7 +126,7 @@ public unsafe class Renderer : IDisposable
         Rasterizer!.Bind();
         Context.RSSetViewports(1, Viewport);
 
-        Context.PSSetSamplers(0, 1, ref PixelShaderSampler);
+        PixelShaderSampler.Bind(0, BindTo.PixelShader);
 
         VertexShader!.Bind(this);
         PixelShader!.Bind(this);
