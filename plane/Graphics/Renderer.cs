@@ -53,6 +53,8 @@ public unsafe class Renderer : IDisposable
 
     private readonly Sampler PixelShaderSampler;
 
+    private readonly ImGuiRenderer ImGuiRenderer;
+
     public Camera Camera;
 
     public readonly List<RenderObject> RenderObjects = new List<RenderObject>();
@@ -113,6 +115,8 @@ public unsafe class Renderer : IDisposable
         PixelShaderBuffer = new Buffer<PixelShaderBuffer>(this, ref PixelShaderBufferData, BindFlag.ConstantBuffer, Usage.Dynamic, CpuAccessFlag.Write);
         PixelShaderBuffer.DataBuffer.SetObjectName("RendererPixelShaderBuffer");
 
+        ImGuiRenderer = new ImGuiRenderer(this);
+
         Camera = new Camera(window, 70f, 0.2f, 1000f);
     }
 
@@ -145,6 +149,8 @@ public unsafe class Renderer : IDisposable
         {
             RenderObjects[i].Render(Camera);
         }
+
+        ImGuiRenderer.Render();
 
         Context.ResolveSubresource(BackBuffer!.NativeTexture, 0, MultiSampleBackBuffer!.NativeTexture, 0, BackBuffer!.Format);
 

@@ -1,9 +1,13 @@
 ﻿using System.Numerics;
+using ImGuiNET;
 using plane.Diagnostics;
 using plane.Graphics;
 using Silk.NET.Direct3D11;
 using Silk.NET.Maths;
+using Silk.NET.SDL;
 using Silk.NET.Windowing;
+using Silk.NET.Windowing.Sdl;
+using Renderer = plane.Graphics.Renderer;
 
 namespace plane;
 
@@ -21,6 +25,8 @@ public abstract class Plane : IDisposable
 
     public Plane(string windowName)
     {
+        SdlWindowing.Use();
+
         Window = Silk.NET.Windowing.Window.Create(new WindowOptions()
         {
             Size = new Vector2(1280, 720).ToGeneric().As<int>(),
@@ -28,8 +34,10 @@ public abstract class Plane : IDisposable
             Title = windowName,
             WindowClass = "PlaneWindowClass",
             VSync = true,
-            API = GraphicsAPI.None
+            API = GraphicsAPI.None,
         });
+
+        
 
         Window.Load += InternalLoad;
 
