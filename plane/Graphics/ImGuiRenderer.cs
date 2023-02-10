@@ -31,10 +31,20 @@ public class ImGuiRenderer
         ImGuiNative.ImGui_ImplDX11_Init((nint)Renderer.Device.Handle, (nint)Renderer.Context.Handle);
         ImGuiNative.ImGui_ImplSDL2_InitForD3D(Renderer.Window.Native!.Sdl!.Value);
 
-        SdlProvider.SDL.Value.AddEventWatch(new PfnEventFilter((x, y) => { Event e = *y; lock (EventLock) { EventQueue.Enqueue(e); } return 0; }), null);
+        SdlProvider.SDL.Value.AddEventWatch(new PfnEventFilter((x, y) => 
+        {
+            Event e = *y;
+            lock (EventLock) 
+            { 
+                EventQueue.Enqueue(e);
+            } 
+            return 0; 
+        }), null);
 
         ImGui.GetIO().Fonts.AddFontFromFileTTF("C:\\Windows\\Fonts\\Tahoma.ttf", 18f);
     }
+
+    private string CoolString = "";
 
     public void Render()
     {
@@ -43,6 +53,7 @@ public class ImGuiRenderer
             while (EventQueue.Count > 0)
             {
                 Event e = EventQueue.Dequeue();
+
                 unsafe
                 {
                     ImGuiNative.ImGui_ImplSDL2_ProcessEvent((nint)(&e));
@@ -58,12 +69,15 @@ public class ImGuiRenderer
 
         ImGui.Text("Test 2");
 
+        ImGui.InputText("Test 3", ref CoolString, 2000);
+
         ImGui.End();
 
         ImGui.Render();
         ImGuiNative.ImGui_ImplDX11_RenderDrawData(ImGui.GetDrawData());
     }
 
+    
     static ImGuiRenderer()
     {
         Logger.WriteLine("Create ImGuiRenderer: Dll Resolver");

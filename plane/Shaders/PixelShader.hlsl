@@ -3,7 +3,6 @@
 cbuffer PixelShaderBuffer : register(b0)
 {
     float TimeElapsed;
-    float3 Padding;
 };
 
 SamplerState LinearSamplerView : SAMPLER : register(s0);

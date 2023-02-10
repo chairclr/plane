@@ -20,6 +20,11 @@ public class StructAlignmentGenerator : ISourceGenerator
     private static readonly string AlignAttributeName = "StructAlign16Attribute";
     private static readonly string AlignAttributeNameShort = "StructAlign16";
 
+    public void Initialize(GeneratorInitializationContext context)
+    {
+
+    }
+
     public void Execute(GeneratorExecutionContext context)
     {
         Compilation compilation = context.Compilation;
@@ -55,10 +60,6 @@ public class StructAlignmentGenerator : ISourceGenerator
         }
     }
 
-    public void Initialize(GeneratorInitializationContext context)
-    {
-
-    }
 
     private static int SizeofStruct(StructDeclarationSyntax s)
     {
