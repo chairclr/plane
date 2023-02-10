@@ -31,14 +31,14 @@ public class ImGuiRenderer
         ImGuiNative.ImGui_ImplDX11_Init((nint)Renderer.Device.Handle, (nint)Renderer.Context.Handle);
         ImGuiNative.ImGui_ImplSDL2_InitForD3D(Renderer.Window.Native!.Sdl!.Value);
 
-        SdlProvider.SDL.Value.AddEventWatch(new PfnEventFilter((x, y) => 
+        SdlProvider.SDL.Value.AddEventWatch(new PfnEventFilter((x, y) =>
         {
             Event e = *y;
-            lock (EventLock) 
-            { 
+            lock (EventLock)
+            {
                 EventQueue.Enqueue(e);
-            } 
-            return 0; 
+            }
+            return 0;
         }), null);
 
         ImGui.GetIO().Fonts.AddFontFromFileTTF("C:\\Windows\\Fonts\\Tahoma.ttf", 18f);
@@ -77,7 +77,7 @@ public class ImGuiRenderer
         ImGuiNative.ImGui_ImplDX11_RenderDrawData(ImGui.GetDrawData());
     }
 
-    
+
     static ImGuiRenderer()
     {
         Logger.WriteLine("Create ImGuiRenderer: Dll Resolver");

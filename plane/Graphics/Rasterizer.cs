@@ -32,7 +32,7 @@ public class Rasterizer : IDisposable
         SilkMarshal.ThrowHResult(Renderer.Device.CreateRasterizerState(Description, ref RasterizerState));
     }
 
-    public void Dispose() 
+    public void Dispose()
     {
         GC.SuppressFinalize(this);
 

@@ -149,7 +149,7 @@ public class Model : IDisposable
             if (ret == Return.Success)
             {
                 Texture2D planeTexture = Texture2D.GetSinglePixelTexture(Renderer, new Rgba32(color));
-                planeTexture.NativeTexture.SetObjectName($"{scene.MName.AsString}MaterialDiffuseColor");    
+                planeTexture.NativeTexture.SetObjectName($"{scene.MName.AsString}MaterialDiffuseColor");
                 textures.Add(planeTexture);
             }
         }

@@ -1,9 +1,8 @@
-namespace ImGuiNET
+namespace ImGuiNET;
+
+public enum ImGuiSortDirection
 {
-    public enum ImGuiSortDirection
-    {
-        None = 0,
-        Ascending = 1,
-        Descending = 2,
-    }
+    None = 0,
+    Ascending = 1,
+    Descending = 2,
 }

@@ -24,12 +24,12 @@ public class Transform
 
     private Vector3 _up = Vector3.UnitY;
 
-    private bool WorldMatrixNeedsUpdate = false; 
+    private bool WorldMatrixNeedsUpdate = false;
 
     public Vector3 Translation
     {
         get => _translation;
-        set 
+        set
         {
             _translation = value;
             WorldMatrixNeedsUpdate = true;

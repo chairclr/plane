@@ -14,7 +14,7 @@ public class TestPlaneGame : Plane
 {
     public RenderModel? CubeModel;
 
-    public TestPlaneGame(string windowName) 
+    public TestPlaneGame(string windowName)
         : base(windowName)
     {
 

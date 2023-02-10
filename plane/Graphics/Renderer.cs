@@ -66,7 +66,7 @@ public unsafe class Renderer : IDisposable
         CreateDeviceAndSwapChain();
 
         CreateBackBuffer();
-        
+
         CreateDepthBuffer();
 
         CreateViewport();
@@ -169,7 +169,7 @@ public unsafe class Renderer : IDisposable
 
         BackBuffer!.Dispose();
         RenderTargetView!.Dispose();
-        MultiSampleBackBuffer!.Dispose();    
+        MultiSampleBackBuffer!.Dispose();
         MultiSampleRenderTargetView!.Dispose();
         DepthBuffer!.NativeTexture.Dispose();
         DepthStencilView!.Dispose();

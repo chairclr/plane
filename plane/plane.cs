@@ -37,7 +37,7 @@ public abstract class Plane : IDisposable
             API = GraphicsAPI.None,
         });
 
-        
+
 
         Window.Load += InternalLoad;
 

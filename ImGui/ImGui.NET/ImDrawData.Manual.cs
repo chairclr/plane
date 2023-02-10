@@ -1,7 +1,6 @@
-﻿namespace ImGuiNET
+﻿namespace ImGuiNET;
+
+public unsafe partial struct ImDrawDataPtr
 {
-    public unsafe partial struct ImDrawDataPtr
-    {
-        public RangePtrAccessor<ImDrawListPtr> CmdListsRange => new RangePtrAccessor<ImDrawListPtr>(CmdLists.ToPointer(), CmdListsCount);
-    }
+    public RangePtrAccessor<ImDrawListPtr> CmdListsRange => new RangePtrAccessor<ImDrawListPtr>(CmdLists.ToPointer(), CmdListsCount);
 }

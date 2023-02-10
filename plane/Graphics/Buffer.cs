@@ -5,8 +5,8 @@ using Silk.NET.Direct3D11;
 
 namespace plane.Graphics;
 
-public unsafe class Buffer<T> : IDisposable 
-    where T : unmanaged 
+public unsafe class Buffer<T> : IDisposable
+    where T : unmanaged
 {
     private readonly Renderer Renderer;
 

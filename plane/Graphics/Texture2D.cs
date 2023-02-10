@@ -35,7 +35,7 @@ public unsafe class Texture2D : IDisposable
         }
     }
 
-    
+
 
     internal Texture2D(Renderer renderer, Texture2DDesc desc, TextureType textureType)
     {
