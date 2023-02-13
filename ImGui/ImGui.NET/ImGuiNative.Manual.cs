@@ -24,4 +24,6 @@ public static unsafe partial class ImGuiNative
     public static extern void ImGui_ImplSDL2_NewFrame();
     [DllImport("cimgui", CallingConvention = CallingConvention.Cdecl)]
     public static extern void ImGui_ImplSDL2_ProcessEvent(IntPtr sdlEvent);
+    [DllImport("cimgui", CallingConvention = CallingConvention.Cdecl)]
+    public static extern bool ImGui_ImplSDL2_Shutdown();
 }

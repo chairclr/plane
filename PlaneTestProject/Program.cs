@@ -6,8 +6,10 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        using TestPlaneGame game = new TestPlaneGame("Plane Test Project");
+        TestPlaneGame game = new TestPlaneGame("Plane Test Project");
 
         game.Run();
+
+        game.Dispose();
     }
 }

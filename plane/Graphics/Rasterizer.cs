@@ -34,8 +34,8 @@ public class Rasterizer : IDisposable
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
-
         RasterizerState.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

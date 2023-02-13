@@ -149,7 +149,6 @@ public class Model : IDisposable
             if (ret == Return.Success)
             {
                 Texture2D planeTexture = Texture2D.GetSinglePixelTexture(Renderer, new Rgba32(color));
-                planeTexture.NativeTexture.SetObjectName($"{scene.MName.AsString}MaterialDiffuseColor");
                 textures.Add(planeTexture);
             }
         }
@@ -168,7 +167,6 @@ public class Model : IDisposable
 
                     string fullPath = Path.Combine(ModelImportDirectory!, fileRelative);
                     Texture2D planeTexture = Texture2D.LoadFromFile(Renderer, fullPath);
-                    planeTexture.NativeTexture.SetObjectName($"{scene.MName.AsString}MaterialTextureBase");
                     textures.Add(planeTexture);
                 }
             }
@@ -187,11 +185,11 @@ public class Model : IDisposable
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
-
         foreach (Mesh mesh in Meshes)
         {
             mesh.Dispose();
         }
+
+        GC.SuppressFinalize(this);
     }
 }

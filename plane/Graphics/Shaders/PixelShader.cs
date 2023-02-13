@@ -18,10 +18,13 @@ public class PixelShader : Shader, IDisposable
         renderer.Context.PSSetShader(NativeShader, null, 0);
     }
 
-    public new void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        GC.SuppressFinalize(this);
+        base.Dispose(disposing);
 
-        NativeShader.Dispose();
+        if (disposing)
+        {
+            NativeShader.Dispose();
+        }
     }
 }

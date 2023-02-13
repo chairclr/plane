@@ -52,8 +52,6 @@ public class Mesh : IDisposable
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
-
         VertexBuffer.Dispose();
 
         IndexBuffer.Dispose();
@@ -62,5 +60,7 @@ public class Mesh : IDisposable
         {
             texture.Dispose();
         }
+
+        GC.SuppressFinalize(this);
     }
 }

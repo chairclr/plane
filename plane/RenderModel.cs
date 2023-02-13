@@ -36,4 +36,14 @@ public class RenderModel : RenderObject
 
         Model?.Render();
     }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (disposing) 
+        {
+            Model?.Dispose();
+        }
+    }
 }

@@ -78,13 +78,11 @@ public unsafe class Renderer : IDisposable
             FillMode = FillMode.Solid,
             CullMode = CullMode.Back,
         });
-        Rasterizer.RasterizerState.SetObjectName("RendererRasterizer");
 
         string planeRootFolder = Path.GetDirectoryName(typeof(plane.Plane).Assembly.Location)!;
 
         VertexShader = ShaderCompiler.CompileFromFile<VertexShader>(Path.Combine(planeRootFolder, "Shaders/VertexShader.hlsl"), "VSMain", ShaderModel.VertexShader5_0);
         VertexShader.Create(this);
-        VertexShader.NativeShader.SetObjectName("RendererVertexShader");
 
         InputElementDesc[] vertexLayout =
         {
@@ -94,11 +92,9 @@ public unsafe class Renderer : IDisposable
         };
 
         VertexShader.SetInputLayout(this, vertexLayout);
-        VertexShader.NativeInputLayout.SetObjectName("RendererVertexShaderInputLayout");
 
         PixelShader = ShaderCompiler.CompileFromFile<PixelShader>(Path.Combine(planeRootFolder, "Shaders/PixelShader.hlsl"), "PSMain", ShaderModel.PixelShader5_0);
         PixelShader.Create(this);
-        VertexShader.NativeShader.SetObjectName("RendererPixelShader");
 
         PixelShaderSampler = new Sampler(this, new SamplerDesc()
         {
@@ -110,10 +106,8 @@ public unsafe class Renderer : IDisposable
             MinLOD = 0,
             MaxLOD = float.MaxValue
         });
-        PixelShaderSampler.NativeSamplerState.SetObjectName("RendererPixelShaderSampler");
 
         PixelShaderBuffer = new Buffer<PixelShaderBuffer>(this, ref PixelShaderBufferData, BindFlag.ConstantBuffer, Usage.Dynamic, CpuAccessFlag.Write);
-        PixelShaderBuffer.DataBuffer.SetObjectName("RendererPixelShaderBuffer");
 
         ImGuiRenderer = new ImGuiRenderer(this);
 
@@ -231,8 +225,6 @@ public unsafe class Renderer : IDisposable
         SilkMarshal.ThrowHResult(dxgiFactory.CreateSwapChainForHwnd(Device, Window.Native!.Win32!.Value!.Hwnd, swapChainDesc, null, ref Unsafe.NullRef<IDXGIOutput>(), ref SwapChain));
 
         dxgiFactory.Dispose();
-
-        SwapChain.SetObjectName("RendererSwapChain");
     }
 
     private void CreateBackBuffer()
@@ -241,8 +233,6 @@ public unsafe class Renderer : IDisposable
 
         SilkMarshal.ThrowHResult(SwapChain.GetBuffer(0, out BackBuffer.NativeTexture));
 
-        BackBuffer.NativeTexture.SetObjectName("RendererBackBuffer");
-
         RenderTargetViewDesc backBufferRenderTargetViewDesc = new RenderTargetViewDesc()
         {
             ViewDimension = RtvDimension.Texture2D,
@@ -250,15 +240,11 @@ public unsafe class Renderer : IDisposable
 
         SilkMarshal.ThrowHResult(Device.CreateRenderTargetView(BackBuffer.NativeTexture, backBufferRenderTargetViewDesc, ref RenderTargetView));
 
-        RenderTargetView.SetObjectName("RendererRenderTargetView");
-
         Texture2DDesc backBufferDesc = BackBuffer.GetTextureDescription();
 
         BackBuffer.Format = backBufferDesc.Format;
 
         MultiSampleBackBuffer = new Texture2D(this, (int)backBufferDesc.Width, (int)backBufferDesc.Height, TextureType.None, new SampleDesc(8, 0), BindFlag.RenderTarget, BackBuffer.Format);
-
-        MultiSampleBackBuffer.NativeTexture.SetObjectName("RendererMultiSampleBackBuffer");
 
         RenderTargetViewDesc multiSampleRenderTargetViewDesc = new RenderTargetViewDesc()
         {
@@ -266,15 +252,11 @@ public unsafe class Renderer : IDisposable
         };
 
         SilkMarshal.ThrowHResult(Device.CreateRenderTargetView(MultiSampleBackBuffer.NativeTexture, multiSampleRenderTargetViewDesc, ref MultiSampleRenderTargetView));
-
-        MultiSampleRenderTargetView.SetObjectName("RendererMultiSampleRenderTargetView");
     }
 
     private void CreateDepthBuffer()
     {
         DepthBuffer = new Texture2D(this, Window.Size.X, Window.Size.Y, TextureType.DepthBuffer, new SampleDesc(8, 0), BindFlag.DepthStencil | BindFlag.ShaderResource, Format.FormatR32Typeless, usage: Usage.Default);
-
-        DepthBuffer.NativeTexture.SetObjectName("RendererDepthBuffer");
 
         DepthStencilViewDesc depthStencilViewDesc = new DepthStencilViewDesc()
         {
@@ -284,8 +266,6 @@ public unsafe class Renderer : IDisposable
 
         SilkMarshal.ThrowHResult(Device.CreateDepthStencilView(DepthBuffer.NativeTexture, depthStencilViewDesc, ref DepthStencilView));
 
-        DepthStencilView.SetObjectName("RendererDepthStencilView");
-
         DepthStencilDesc depthStencilDesc = new DepthStencilDesc()
         {
             DepthEnable = 1,
@@ -294,8 +274,6 @@ public unsafe class Renderer : IDisposable
         };
 
         SilkMarshal.ThrowHResult(Device.CreateDepthStencilState(depthStencilDesc, ref DepthStencilState));
-
-        DepthStencilState.SetObjectName("RendererDepthStencilState");
     }
 
     private void CreateViewport()
@@ -314,6 +292,8 @@ public unsafe class Renderer : IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
+
+        ImGuiRenderer.Dispose();
 
         BackBuffer?.Dispose();
 
@@ -344,14 +324,19 @@ public unsafe class Renderer : IDisposable
             renderObject.Dispose();
         }
 
-        Device.Dispose();
+        SwapChain.Dispose();
 
         Context.Dispose();
 
-        SwapChain.Dispose();
+        Device.Dispose();
+
+        Device.QueryInterface<ID3D11Debug>().ReportLiveDeviceObjects(RldoFlags.Detail);
 
         GC.Collect();
 
         GC.WaitForPendingFinalizers();
+
+        Thread.Sleep(1000);
+        Thread.Sleep(1000);
     }
 }

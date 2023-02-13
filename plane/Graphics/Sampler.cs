@@ -56,8 +56,8 @@ public class Sampler : IDisposable
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
-
         NativeSamplerState.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

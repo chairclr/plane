@@ -43,8 +43,16 @@ public abstract class RenderObject : IDisposable
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
+        Dispose(true);
 
-        VertexShaderDataBuffer.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            VertexShaderDataBuffer.Dispose();
+        }
     }
 }

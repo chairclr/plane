@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 using ImGuiNET;
 using plane.Diagnostics;
-using Silk.NET.Direct3D.Compilers;
-using Silk.NET.GLFW;
 using Silk.NET.SDL;
-using Silk.NET.Windowing.Sdl;
 
 namespace plane.Graphics;
-public class ImGuiRenderer
+
+public class ImGuiRenderer : IDisposable
 {
     private readonly Renderer Renderer;
 
@@ -98,5 +91,13 @@ public class ImGuiRenderer
 
             return libraryHandle;
         });
+    }
+
+    public void Dispose()
+    {
+        ImGuiNative.ImGui_ImplDX11_Shutdown();
+        ImGuiNative.ImGui_ImplSDL2_Shutdown();
+
+        GC.SuppressFinalize(this);
     }
 }

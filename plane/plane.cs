@@ -37,8 +37,6 @@ public abstract class Plane : IDisposable
             API = GraphicsAPI.None,
         });
 
-
-
         Window.Load += InternalLoad;
 
         Window.Render += InternalRender;
@@ -109,8 +107,10 @@ public abstract class Plane : IDisposable
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
+        Renderer?.Dispose();
 
         Window.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

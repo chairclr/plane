@@ -10,10 +10,18 @@ public abstract class Shader : IDisposable
 
     public abstract void Bind(Renderer renderer);
 
-    public virtual void Dispose()
+    public void Dispose()
     {
         GC.SuppressFinalize(this);
 
-        ShaderData.Dispose();
+        Dispose(true);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing) 
+        {
+            ShaderData.Dispose();
+        }
     }
 }

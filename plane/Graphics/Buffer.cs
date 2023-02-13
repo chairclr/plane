@@ -122,8 +122,8 @@ public unsafe class Buffer<T> : IDisposable
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
-
         DataBuffer.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }
