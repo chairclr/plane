@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.SymbolStore;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -29,13 +30,12 @@ public class StructAlignmentGenerator : ISourceGenerator
     {
         Compilation compilation = context.Compilation;
         IEnumerable<SyntaxNode> allNodes = compilation.SyntaxTrees.SelectMany(s => s.GetRoot().DescendantNodes());
-        IEnumerable<StructDeclarationSyntax> allStructs = allNodes
+        IEnumerable<StructDeclarationSyntax> structsToAlign = allNodes
             .Where(d => d.IsKind(SyntaxKind.StructDeclaration))
-            .OfType<StructDeclarationSyntax>();
+            .OfType<StructDeclarationSyntax>()
+            .Where(s => s.AttributeLists.SelectMany(a => a.Attributes).Select(a => a.Name.ToString()).Where(n => n == AlignAttributeName || n == AlignAttributeNameShort).Any());
 
-        IEnumerable<StructDeclarationSyntax> alignableStructs = allStructs.Where(x => x.AttributeLists.SelectMany(y => y.Attributes).Where(attr => attr.Name.ToString() == AlignAttributeName || attr.Name.ToString() == AlignAttributeNameShort).Any());
-
-        foreach (StructDeclarationSyntax structToAlign in alignableStructs)
+        foreach (StructDeclarationSyntax structToAlign in structsToAlign)
         {
             int structSize = SizeofStruct(structToAlign);
 
