@@ -14,3 +14,14 @@ public partial struct PixelShaderBuffer
 {
     public float TimeElapsed;
 }
+
+[StructAlign16]
+public partial struct ComputeShaderBuffer
+{
+    public int BlurSize;
+
+    public ComputeShaderBuffer()
+    {
+        BlurSize = 4;
+    }
+}

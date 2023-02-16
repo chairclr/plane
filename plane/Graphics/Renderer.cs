@@ -2,6 +2,7 @@
 using System.Net.NetworkInformation;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using ImGuiNET;
 using plane.Diagnostics;
 using plane.Graphics.Providers;
 using plane.Graphics.Shaders;
@@ -31,13 +32,19 @@ public unsafe class Renderer : IDisposable
 
     private ComPtr<ID3D11RenderTargetView> MultiSampleRenderTargetView = default;
 
-    private Texture2D? PostProcessBackBuffer;
+    private Texture2D? PostProcessBackBuffer1;
+
+    private Texture2D? PostProcessBackBuffer2;
 
     private Texture2D? MultiSampleDepthBuffer;
 
     private ComPtr<ID3D11DepthStencilView> MultiSampleDepthStencilView = default;
 
     private ComPtr<ID3D11DepthStencilState> MultiSampleDepthStencilState = default;
+
+    private Texture2D? ImGuiBackBuffer;
+
+    private ComPtr<ID3D11RenderTargetView> ImGuiRenderTargetView = default;
 
     private Viewport Viewport = default;
 
@@ -56,6 +63,10 @@ public unsafe class Renderer : IDisposable
     private readonly ComputeShader? PostProcessComputeShaderX;
 
     private readonly ComputeShader? PostProcessComputeShaderY;
+
+    private ComputeShaderBuffer ComputeShaderBufferData = new ComputeShaderBuffer();
+
+    private readonly Buffer<ComputeShaderBuffer> ComputeShaderBuffer;
 
     private readonly Sampler PixelShaderSampler;
 
@@ -136,6 +147,8 @@ public unsafe class Renderer : IDisposable
         PostProcessComputeShaderY = ShaderCompiler.CompileFromFile<ComputeShader>(Path.Combine(planeRootFolder, "Shaders/PostProcessComputeShader.hlsl"), "CSMainY", ShaderModel.ComputeShader5_0);
         PostProcessComputeShaderY.Create(this);
 
+        ComputeShaderBuffer = new Buffer<ComputeShaderBuffer>(this, ref ComputeShaderBufferData, BindFlag.ConstantBuffer, Usage.Dynamic, CpuAccessFlag.Write);
+
         ImGuiRenderer = new ImGuiRenderer(this);
 
         Camera = new Camera(window, 70f, 0.2f, 1000f);
@@ -147,9 +160,9 @@ public unsafe class Renderer : IDisposable
 
         PostProcessScene();
 
-        //RenderImGui();
-        //
-        //Present();
+        RenderImGui();
+
+        Present();
     }
 
     private void RenderScene()
@@ -184,35 +197,54 @@ public unsafe class Renderer : IDisposable
         }
     }
 
+    
+
     private void PostProcessScene()
     {
-        Context.ResolveSubresource(PostProcessBackBuffer!.NativeTexture, 0, MultiSampleBackBuffer!.NativeTexture, 0, PostProcessBackBuffer!.Format);
+        Context.ResolveSubresource(PostProcessBackBuffer1!.NativeTexture, 0, MultiSampleBackBuffer!.NativeTexture, 0, PostProcessBackBuffer1!.Format);
 
-        Context.CSSetUnorderedAccessViews(1, 1, ref PostProcessBackBuffer.UnorderedAccessView, null);
+        ComputeShaderBuffer.WriteData(ref ComputeShaderBufferData);
+        ComputeShaderBuffer.Bind(0, BindTo.ComputeShader);
 
-        uint numThreadsX = (uint)MathF.Ceiling((float)Window.Size.X / 16);
-        uint numThreadsY = (uint)MathF.Ceiling((float)Window.Size.Y / 16);
+        Context.CSSetUnorderedAccessViews(1, 1, ref PostProcessBackBuffer1!.UnorderedAccessView, null);
+        Context.CSSetUnorderedAccessViews(2, 1, ref PostProcessBackBuffer2!.UnorderedAccessView, null);
+
+        uint numThreadsX = (uint)MathF.Ceiling((float)Window.Size.X / 32f);
+        uint numThreadsY = (uint)MathF.Ceiling((float)Window.Size.Y / 32f);
 
         PostProcessComputeShaderX!.Bind(this);
         Context.Dispatch(numThreadsX, numThreadsY, 1);
 
+        Context.CopyResource(PostProcessBackBuffer1!.NativeTexture, PostProcessBackBuffer2!.NativeTexture);
+
+        Context.CSSetUnorderedAccessViews(1, 1, ref PostProcessBackBuffer1!.UnorderedAccessView, null);
+        Context.CSSetUnorderedAccessViews(2, 1, ref PostProcessBackBuffer2!.UnorderedAccessView, null);
+
         PostProcessComputeShaderY!.Bind(this);
         Context.Dispatch(numThreadsX, numThreadsY, 1);
-
-        Context.ResolveSubresource(BackBuffer!.NativeTexture, 0, PostProcessBackBuffer!.NativeTexture, 0, BackBuffer!.Format);
-
-        SwapChain.Present(1, 0);
     }
 
     private void RenderImGui()
     {
-        ImGuiRenderer.Render();
+        Context.CopyResource(ImGuiBackBuffer!.NativeTexture, PostProcessBackBuffer2!.NativeTexture);
 
-        Context.ResolveSubresource(BackBuffer!.NativeTexture, 0, MultiSampleBackBuffer!.NativeTexture, 0, BackBuffer!.Format);
+        Context.OMSetRenderTargets(1, ref ImGuiRenderTargetView, ref Unsafe.NullRef<ID3D11DepthStencilView>());
+
+        ImGuiRenderer.Begin();
+
+        if (ImGui.Begin("Test"))
+        {
+            ImGui.SliderInt("Blur Size", ref ComputeShaderBufferData.BlurSize, 1, 64);
+
+            ImGui.End();
+        }
+
+        ImGuiRenderer.End();
     }
 
     private void Present()
     {
+        Context.CopyResource(BackBuffer!.NativeTexture, ImGuiBackBuffer!.NativeTexture);
 
         SwapChain.Present(1, 0);
     }
@@ -231,7 +263,10 @@ public unsafe class Renderer : IDisposable
         RenderTargetView!.Dispose();
         MultiSampleBackBuffer!.Dispose();
         MultiSampleRenderTargetView!.Dispose();
-        PostProcessBackBuffer!.Dispose();
+        PostProcessBackBuffer1!.Dispose();
+        PostProcessBackBuffer2!.Dispose();
+        ImGuiBackBuffer!.Dispose();
+        ImGuiRenderTargetView!.Dispose();
         MultiSampleDepthBuffer!.NativeTexture.Dispose();
         MultiSampleDepthStencilView!.Dispose();
         MultiSampleDepthStencilState!.Dispose();
@@ -296,31 +331,53 @@ public unsafe class Renderer : IDisposable
 
     private void CreateBackBuffer()
     {
-        BackBuffer = new Texture2D(this, TextureType.BackBuffer);
-
-        SilkMarshal.ThrowHResult(SwapChain.GetBuffer(0, out BackBuffer.NativeTexture));
-
-        RenderTargetViewDesc backBufferRenderTargetViewDesc = new RenderTargetViewDesc()
+        // BackBuffer
         {
-            ViewDimension = RtvDimension.Texture2D,
-        };
+            BackBuffer = new Texture2D(this, TextureType.BackBuffer);
 
-        SilkMarshal.ThrowHResult(Device.CreateRenderTargetView(BackBuffer.NativeTexture, backBufferRenderTargetViewDesc, ref RenderTargetView));
+            SilkMarshal.ThrowHResult(SwapChain.GetBuffer(0, out BackBuffer.NativeTexture));
+
+            RenderTargetViewDesc backBufferRenderTargetViewDesc = new RenderTargetViewDesc()
+            {
+                ViewDimension = RtvDimension.Texture2D,
+            };
+
+            SilkMarshal.ThrowHResult(Device.CreateRenderTargetView(BackBuffer.NativeTexture, backBufferRenderTargetViewDesc, ref RenderTargetView));
+        }
 
         Texture2DDesc backBufferDesc = BackBuffer.GetTextureDescription();
 
-        BackBuffer.Format = backBufferDesc.Format;
-
-        MultiSampleBackBuffer = new Texture2D(this, (int)backBufferDesc.Width, (int)backBufferDesc.Height, TextureType.None, new SampleDesc(8, 0), BindFlag.RenderTarget, BackBuffer.Format);
-
-        RenderTargetViewDesc multiSampleRenderTargetViewDesc = new RenderTargetViewDesc()
+        // MultiSampleBackBuffer
         {
-            ViewDimension = RtvDimension.Texture2Dms
-        };
 
-        SilkMarshal.ThrowHResult(Device.CreateRenderTargetView(MultiSampleBackBuffer.NativeTexture, multiSampleRenderTargetViewDesc, ref MultiSampleRenderTargetView));
+            BackBuffer.Format = backBufferDesc.Format;
 
-        PostProcessBackBuffer = new Texture2D(this, (int)backBufferDesc.Width, (int)backBufferDesc.Height, TextureType.None, new SampleDesc(1, 0), BindFlag.UnorderedAccess, BackBuffer.Format);
+            MultiSampleBackBuffer = new Texture2D(this, (int)backBufferDesc.Width, (int)backBufferDesc.Height, TextureType.None, new SampleDesc(8, 0), BindFlag.RenderTarget, BackBuffer.Format);
+
+            RenderTargetViewDesc multiSampleRenderTargetViewDesc = new RenderTargetViewDesc()
+            {
+                ViewDimension = RtvDimension.Texture2Dms
+            };
+
+            SilkMarshal.ThrowHResult(Device.CreateRenderTargetView(MultiSampleBackBuffer.NativeTexture, multiSampleRenderTargetViewDesc, ref MultiSampleRenderTargetView));
+        }
+
+
+        PostProcessBackBuffer1 = new Texture2D(this, (int)backBufferDesc.Width, (int)backBufferDesc.Height, TextureType.None, new SampleDesc(1, 0), BindFlag.UnorderedAccess, BackBuffer.Format);
+
+        PostProcessBackBuffer2 = new Texture2D(this, (int)backBufferDesc.Width, (int)backBufferDesc.Height, TextureType.None, new SampleDesc(1, 0), BindFlag.UnorderedAccess, BackBuffer.Format);
+
+        // ImGuiBackBuffer
+        {
+            ImGuiBackBuffer = new Texture2D(this, (int)backBufferDesc.Width, (int)backBufferDesc.Height, TextureType.None, new SampleDesc(1, 0), BindFlag.RenderTarget, BackBuffer.Format);
+
+            RenderTargetViewDesc imGuiRenderTargetViewDesc = new RenderTargetViewDesc()
+            {
+                ViewDimension = RtvDimension.Texture2D
+            };
+
+            SilkMarshal.ThrowHResult(Device.CreateRenderTargetView(ImGuiBackBuffer.NativeTexture, imGuiRenderTargetViewDesc, ref ImGuiRenderTargetView));
+        }
     }
 
     private void CreateDepthBuffer()

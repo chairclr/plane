@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using ImGuiNET;
 using plane;
 using plane.Diagnostics;
 using Plane = plane.Plane;
@@ -12,7 +13,7 @@ namespace PlaneTestProject;
 
 public class TestPlaneGame : Plane
 {
-    public RenderModel? CubeModel;
+    public List<RenderModel> CubeModels = new List<RenderModel>();
 
     public TestPlaneGame(string windowName)
         : base(windowName)
@@ -22,21 +23,35 @@ public class TestPlaneGame : Plane
 
     public override void Load()
     {
-        CubeModel = new RenderModel(Renderer!, Path.Combine(Path.GetDirectoryName(typeof(TestPlaneGame).Assembly.Location)!, "Models/cube.obj"));
+        for (int i = 0; i < 5; i++)
+        {
+            CubeModels.Add(new RenderModel(Renderer!, Path.Combine(Path.GetDirectoryName(typeof(TestPlaneGame).Assembly.Location)!, "Models/cube.obj")));
 
-        Renderer!.RenderObjects.Add(CubeModel);
+            Vector3 pos = new Vector3(4f - (i * 2f), 0, 0);
 
-        Renderer!.Camera.Translation = new Vector3(0f, 0f, -2f);
+            CubeModels.Last().Transform.Translation = pos;
+        }
+
+        Renderer!.RenderObjects.AddRange(CubeModels);
+
+        Renderer!.Camera.Translation = new Vector3(0f, 0f, -4f);
     }
 
     private Vector3 CubeRotation = Vector3.Zero;
 
     public override void Render()
     {
-        CubeRotation.X -= DeltaTime;
-        CubeRotation.Y += DeltaTime;
+        if (!ImGui.IsKeyDown(ImGuiKey.Space))
+        {
+            CubeRotation.X -= DeltaTime;
+            CubeRotation.Y += DeltaTime;
 
-        CubeModel!.Transform.EulerRotation = CubeRotation;
+
+            for (int i = 0; i < 5; i++)
+            {
+                CubeModels[i].Transform.EulerRotation = CubeRotation + new Vector3(i, -i, 0);
+            }
+        }
     }
 
     public override void Update()

@@ -37,9 +37,7 @@ public class ImGuiRenderer : IDisposable
         ImGui.GetIO().Fonts.AddFontFromFileTTF("C:\\Windows\\Fonts\\Tahoma.ttf", 18f);
     }
 
-    private string CoolString = "";
-
-    public void Render()
+    public void Begin()
     {
         lock (EventLock)
         {
@@ -57,19 +55,13 @@ public class ImGuiRenderer : IDisposable
         ImGuiNative.ImGui_ImplDX11_NewFrame();
         ImGuiNative.ImGui_ImplSDL2_NewFrame();
         ImGui.NewFrame();
+    }
 
-        ImGui.Begin("Test");
-
-        ImGui.Text("Test 2");
-
-        ImGui.InputText("Test 3", ref CoolString, 2000);
-
-        ImGui.End();
-
+    public void End()
+    {
         ImGui.Render();
         ImGuiNative.ImGui_ImplDX11_RenderDrawData(ImGui.GetDrawData());
     }
-
 
     static ImGuiRenderer()
     {
