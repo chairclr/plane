@@ -8,9 +8,9 @@ cbuffer PixelShaderBuffer : register(b0)
 SamplerState LinearSamplerView : SAMPLER : register(s0);
 Texture2D MainTextureView : TEXTURE : register(t0);
 
-PS_OUTPUT PSMain(PS_INPUT input) : SV_TARGET
+STANDARD_PS_OUTPUT PSMain(STANDARD_PS_INPUT input) : SV_TARGET
 {
-    PS_OUTPUT output;
+    STANDARD_PS_OUTPUT output;
     
     float4 finalColor = float4(0.0, 0.0, 0.0, 1.0);
     

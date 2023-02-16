@@ -10,7 +10,7 @@ public class PixelShader : Shader, IDisposable
 
     internal unsafe override void Create(Renderer renderer)
     {
-        SilkMarshal.ThrowHResult(renderer.Device.CreatePixelShader(ShaderData.GetBufferPointer(), ShaderData.GetBufferSize(), ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
+        SilkMarshal.ThrowHResult(renderer.Device.CreatePixelShader(ShaderData.BufferPointer, ShaderData.Size, ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
     }
 
     public unsafe override void Bind(Renderer renderer)

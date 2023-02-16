@@ -12,12 +12,12 @@ public class VertexShader : Shader, IDisposable
 
     internal unsafe override void Create(Renderer renderer)
     {
-        SilkMarshal.ThrowHResult(renderer.Device.CreateVertexShader(ShaderData.GetBufferPointer(), ShaderData.GetBufferSize(), ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
+        SilkMarshal.ThrowHResult(renderer.Device.CreateVertexShader(ShaderData.BufferPointer, ShaderData.Size, ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
     }
 
     internal unsafe void SetInputLayout(Renderer renderer, ReadOnlySpan<InputElementDesc> inputLayout)
     {
-        SilkMarshal.ThrowHResult(renderer.Device.CreateInputLayout(inputLayout[0], (uint)inputLayout.Length, ShaderData.GetBufferPointer(), ShaderData.GetBufferSize(), ref NativeInputLayout));
+        SilkMarshal.ThrowHResult(renderer.Device.CreateInputLayout(inputLayout[0], (uint)inputLayout.Length, ShaderData.BufferPointer, ShaderData.Size, ref NativeInputLayout));
     }
 
     public unsafe override void Bind(Renderer renderer)

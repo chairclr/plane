@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
 using ImGuiNET;
 using plane.Diagnostics;
 using plane.Graphics;
@@ -29,7 +30,7 @@ public abstract class Plane : IDisposable
 
         Window = Silk.NET.Windowing.Window.Create(new WindowOptions()
         {
-            Size = new Vector2(1280, 720).ToGeneric().As<int>(),
+            Size = new Vector2(1280, 640).ToGeneric().As<int>(),
             IsVisible = true,
             Title = windowName,
             WindowClass = "PlaneWindowClass",
@@ -107,10 +108,18 @@ public abstract class Plane : IDisposable
 
     public void Dispose()
     {
-        Renderer?.Dispose();
-
-        Window.Dispose();
+        Dispose(true);
 
         GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing) 
+        {
+            Renderer?.Dispose();
+
+            Window.Dispose();
+        }
     }
 }

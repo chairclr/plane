@@ -35,7 +35,20 @@ public unsafe class Texture2D : IDisposable
         }
     }
 
+    private ComPtr<ID3D11UnorderedAccessView> _unorderedAccessView = default;
 
+    internal ref ComPtr<ID3D11UnorderedAccessView> UnorderedAccessView
+    {
+        get
+        {
+            if (Unsafe.IsNullRef(ref _unorderedAccessView.Get()))
+            {
+                _unorderedAccessView = CreateUnorderedAccessView();
+            }
+
+            return ref _unorderedAccessView;
+        }
+    }
 
     internal Texture2D(Renderer renderer, Texture2DDesc desc, TextureType textureType)
     {
@@ -188,6 +201,23 @@ public unsafe class Texture2D : IDisposable
         SilkMarshal.ThrowHResult(Renderer.Device.CreateShaderResourceView(NativeTexture, shaderResourceViewDesc, ref resourceView));
 
         return resourceView;
+    }
+
+    internal ComPtr<ID3D11UnorderedAccessView> CreateUnorderedAccessView()
+    {
+        ComPtr<ID3D11UnorderedAccessView> accessView = default;
+
+        Texture2DDesc textureDesc = GetTextureDescription();
+
+        UnorderedAccessViewDesc unorderedAccessViewDesc = new UnorderedAccessViewDesc()
+        {
+            Format = textureDesc.Format,
+            ViewDimension = UavDimension.Texture2D,
+        };
+
+        SilkMarshal.ThrowHResult(Renderer.Device.CreateUnorderedAccessView(NativeTexture, unorderedAccessViewDesc, ref accessView));
+
+        return accessView;
     }
 
     public void Dispose()

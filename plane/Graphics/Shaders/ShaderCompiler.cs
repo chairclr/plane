@@ -42,7 +42,7 @@ public class ShaderCompiler
     {
         T shader = new T();
 
-        using ComPtr<ID3D10Blob> shaderErrors = default;
+        Blob shaderErrors = new Blob();
 
         uint flags = 0;
 
@@ -54,34 +54,11 @@ public class ShaderCompiler
 
         nint nativeSourceString = SilkMarshal.StringToPtr(src);
 
-        int hr = D3DCompilerProvider.D3DCompiler.Value.Compile((void*)nativeSourceString, (nuint)src.Length, Path.GetFullPath(path), null, (ID3DInclude*)1, entryPoint, shaderModel, flags, 0, shader.ShaderData.GetAddressOf(), shaderErrors.GetAddressOf());
+        int hr = D3DCompilerProvider.D3DCompiler.Value.Compile((void*)nativeSourceString, (nuint)src.Length, Path.GetFullPath(path), null, (ID3DInclude*)1, entryPoint, shaderModel, flags, 0, shader.ShaderData.NativeBlob.GetAddressOf(), shaderErrors.NativeBlob.GetAddressOf());
 
         SilkMarshal.FreeString(nativeSourceString);
 
-        if (HResult.IndicatesFailure(hr))
-        {
-            if (shaderErrors.Handle is not null)
-            {
-                byte* stringPointer = (byte*)shaderErrors.GetBufferPointer();
-                int stringLength = (int)shaderErrors.GetBufferSize();
-
-                string compilerErrors = Encoding.UTF8.GetString(stringPointer, stringLength - 1); // - 1 for null terminator
-
-                shaderErrors.Dispose();
-
-                string[] errors = compilerErrors.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-                foreach (string error in errors)
-                {
-                    Logger.WriteLine(error, LogSeverity.Error);
-                }
-
-                throw new Exception($"Failed to compile shader.\n'{compilerErrors}'");
-            }
-            else
-            {
-                SilkMarshal.ThrowHResult(hr);
-            }
-        }
+        ErrorCheck(hr, shaderErrors);
 
         return shader;
     }
@@ -91,7 +68,7 @@ public class ShaderCompiler
     {
         T shader = new T();
 
-        using ComPtr<ID3D10Blob> shaderErrors = default;
+        Blob shaderErrors = new Blob();
 
         uint flags = 0;
 
@@ -101,18 +78,22 @@ public class ShaderCompiler
 
         nint nativeSourceString = SilkMarshal.StringToPtr(src);
 
-        int hr = D3DCompilerProvider.D3DCompiler.Value.Compile((void*)nativeSourceString, (nuint)src.Length, (string?)null, null, null, entryPoint, shaderModel, flags, 0, shader.ShaderData.GetAddressOf(), shaderErrors.GetAddressOf());
+        int hr = D3DCompilerProvider.D3DCompiler.Value.Compile((void*)nativeSourceString, (nuint)src.Length, (string?)null, null, null, entryPoint, shaderModel, flags, 0, shader.ShaderData.NativeBlob.GetAddressOf(), shaderErrors.NativeBlob.GetAddressOf());
 
         SilkMarshal.FreeString(nativeSourceString);
 
+        ErrorCheck(hr, shaderErrors);
+
+        return shader;
+    }
+
+    private static void ErrorCheck(int hr, Blob shaderErrors)
+    {
         if (HResult.IndicatesFailure(hr))
         {
-            if (shaderErrors.Handle is not null)
+            if (!shaderErrors.IsNull)
             {
-                byte* stringPointer = (byte*)shaderErrors.GetBufferPointer();
-                int stringLength = (int)shaderErrors.GetBufferSize();
-
-                string compilerErrors = Encoding.UTF8.GetString(stringPointer, stringLength - 1);  // - 1 for null terminator
+                string compilerErrors = shaderErrors.AsString()!;
 
                 shaderErrors.Dispose();
 
@@ -129,7 +110,5 @@ public class ShaderCompiler
                 SilkMarshal.ThrowHResult(hr);
             }
         }
-
-        return shader;
     }
 }

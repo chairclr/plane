@@ -19,7 +19,7 @@ public static class DebugExtensions
     {
         Debug.Assert(callback is not null, "Callback cannot be null");
 
-        SilkMarshal.ThrowHResult(ComPtr.Downcast<T, ID3D11Device>(device).QueryInterface(out ComPtr<ID3D11InfoQueue> infoQueue));
+        SilkMarshal.ThrowHResult(((ID3D11Device*)device.Handle)->QueryInterface(out ComPtr<ID3D11InfoQueue> infoQueue));
 
         infoQueue.ClearStorageFilter();
 
@@ -33,9 +33,8 @@ public static class DebugExtensions
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    ulong numMessages = infoQueue.Get().GetNumStoredMessages();
 
-                    if (numMessages == 0)
+                    if (infoQueue.GetNumStoredMessages() == 0)
                     {
                         Thread.Sleep(5);
                         continue;
@@ -43,7 +42,7 @@ public static class DebugExtensions
 
                     lock (infoQueueLock)
                     {
-                        for (ulong i = 0; i < numMessages; i++)
+                        for (ulong i = 0; i < infoQueue.GetNumStoredMessages(); i++)
                         {
                             nuint msgByteLength = 0;
                             SilkMarshal.ThrowHResult(infoQueue.GetMessageA(i, null, ref msgByteLength));
@@ -88,27 +87,25 @@ public static class DebugExtensions
         {
             foreach ((ComPtr<ID3D11InfoQueue> infoQueue, Action<D3DDebugMessage> callback, object infoQueueLock) in PinnedInfoQueues)
             {
-                ulong numMessages = infoQueue.GetNumStoredMessages();
-
-                if (numMessages == 0)
+                if (infoQueue.GetNumStoredMessages() == 0)
                 {
                     continue;
                 }
-
+        
                 lock (infoQueueLock)
                 {
-                    for (ulong i = 0; i < numMessages; i++)
+                    for (ulong i = 0; i < infoQueue.GetNumStoredMessages(); i++)
                     {
                         nuint msgByteLength = 0;
-                        SilkMarshal.ThrowHResult(infoQueue.GetMessageA(i, null, ref msgByteLength));
-
+                        SilkMarshal.ThrowHResult(infoQueue.Get().GetMessageA(i, null, ref msgByteLength));
+        
                         byte[] msgBytes = new byte[msgByteLength];
                         ref Message msg = ref Unsafe.As<byte, Message>(ref msgBytes[0]);
                         SilkMarshal.ThrowHResult(infoQueue.GetMessageA(i, ref msg, ref msgByteLength));
-
+        
                         callback(new D3DDebugMessage(msg));
                     }
-
+        
                     infoQueue.ClearStoredMessages();
                 }
             }

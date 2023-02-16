@@ -31,17 +31,19 @@ public unsafe class Renderer : IDisposable
 
     private ComPtr<ID3D11RenderTargetView> MultiSampleRenderTargetView = default;
 
-    private Texture2D? DepthBuffer;
+    private Texture2D? PostProcessBackBuffer;
 
-    private ComPtr<ID3D11DepthStencilView> DepthStencilView = default;
+    private Texture2D? MultiSampleDepthBuffer;
 
-    private ComPtr<ID3D11DepthStencilState> DepthStencilState = default;
+    private ComPtr<ID3D11DepthStencilView> MultiSampleDepthStencilView = default;
+
+    private ComPtr<ID3D11DepthStencilState> MultiSampleDepthStencilState = default;
 
     private Viewport Viewport = default;
 
     private readonly Rasterizer? Rasterizer;
 
-    // TODO: Implement blend state and alpha blending
+    private readonly ComPtr<ID3D11BlendState> BlendState = default;
 
     private readonly VertexShader? VertexShader;
 
@@ -50,6 +52,10 @@ public unsafe class Renderer : IDisposable
     private PixelShaderBuffer PixelShaderBufferData;
 
     private readonly Buffer<PixelShaderBuffer> PixelShaderBuffer;
+
+    private readonly ComputeShader? PostProcessComputeShaderX;
+
+    private readonly ComputeShader? PostProcessComputeShaderY;
 
     private readonly Sampler PixelShaderSampler;
 
@@ -73,11 +79,27 @@ public unsafe class Renderer : IDisposable
 
         Rasterizer = new Rasterizer(this, new RasterizerDesc()
         {
-            MultisampleEnable = 1,
-            AntialiasedLineEnable = 1,
+            MultisampleEnable = true,
+            AntialiasedLineEnable = true,
             FillMode = FillMode.Solid,
             CullMode = CullMode.Back,
         });
+
+        BlendDesc blendDesc = new BlendDesc();
+
+        blendDesc.RenderTarget[0] = new RenderTargetBlendDesc()
+        {
+            BlendEnable = true,
+            SrcBlend = Blend.SrcAlpha,
+            DestBlend = Blend.InvSrcAlpha,
+            BlendOp = BlendOp.Add,
+            SrcBlendAlpha = Blend.One,
+            DestBlendAlpha = Blend.Zero,
+            BlendOpAlpha = BlendOp.Add,
+            RenderTargetWriteMask = (byte)ColorWriteEnable.All
+        };
+
+        SilkMarshal.ThrowHResult(Device.CreateBlendState(blendDesc, ref BlendState));
 
         string planeRootFolder = Path.GetDirectoryName(typeof(plane.Plane).Assembly.Location)!;
 
@@ -109,6 +131,11 @@ public unsafe class Renderer : IDisposable
 
         PixelShaderBuffer = new Buffer<PixelShaderBuffer>(this, ref PixelShaderBufferData, BindFlag.ConstantBuffer, Usage.Dynamic, CpuAccessFlag.Write);
 
+        PostProcessComputeShaderX = ShaderCompiler.CompileFromFile<ComputeShader>(Path.Combine(planeRootFolder, "Shaders/PostProcessComputeShader.hlsl"), "CSMainX", ShaderModel.ComputeShader5_0);
+        PostProcessComputeShaderX.Create(this);
+        PostProcessComputeShaderY = ShaderCompiler.CompileFromFile<ComputeShader>(Path.Combine(planeRootFolder, "Shaders/PostProcessComputeShader.hlsl"), "CSMainY", ShaderModel.ComputeShader5_0);
+        PostProcessComputeShaderY.Create(this);
+
         ImGuiRenderer = new ImGuiRenderer(this);
 
         Camera = new Camera(window, 70f, 0.2f, 1000f);
@@ -116,12 +143,24 @@ public unsafe class Renderer : IDisposable
 
     public void Render()
     {
-        Context.OMSetRenderTargets(1, ref MultiSampleRenderTargetView, DepthStencilView);
-        Context.OMSetDepthStencilState(DepthStencilState, 0);
+        RenderScene();
+
+        PostProcessScene();
+
+        //RenderImGui();
+        //
+        //Present();
+    }
+
+    private void RenderScene()
+    {
+        Context.OMSetRenderTargets(1, ref MultiSampleRenderTargetView, MultiSampleDepthStencilView);
+        Context.OMSetDepthStencilState(MultiSampleDepthStencilState, 0);
+        Context.OMSetBlendState(BlendState, null, 0xFFFFFFFF);
 
         float[] clearColor = new float[] { 0.55f, 0.7f, 0.75f, 1f };
         Context.ClearRenderTargetView(MultiSampleRenderTargetView, ref clearColor[0]);
-        Context.ClearDepthStencilView(DepthStencilView, (uint)(ClearFlag.Depth | ClearFlag.Stencil), 1.0f, 0);
+        Context.ClearDepthStencilView(MultiSampleDepthStencilView, (uint)(ClearFlag.Depth | ClearFlag.Stencil), 1.0f, 0);
 
         Context.IASetInputLayout(VertexShader!.NativeInputLayout);
         Context.IASetPrimitiveTopology(D3DPrimitiveTopology.D3D10PrimitiveTopologyTrianglelist);
@@ -143,10 +182,37 @@ public unsafe class Renderer : IDisposable
         {
             RenderObjects[i].Render(Camera);
         }
+    }
 
+    private void PostProcessScene()
+    {
+        Context.ResolveSubresource(PostProcessBackBuffer!.NativeTexture, 0, MultiSampleBackBuffer!.NativeTexture, 0, PostProcessBackBuffer!.Format);
+
+        Context.CSSetUnorderedAccessViews(1, 1, ref PostProcessBackBuffer.UnorderedAccessView, null);
+
+        uint numThreadsX = (uint)MathF.Ceiling((float)Window.Size.X / 16);
+        uint numThreadsY = (uint)MathF.Ceiling((float)Window.Size.Y / 16);
+
+        PostProcessComputeShaderX!.Bind(this);
+        Context.Dispatch(numThreadsX, numThreadsY, 1);
+
+        PostProcessComputeShaderY!.Bind(this);
+        Context.Dispatch(numThreadsX, numThreadsY, 1);
+
+        Context.ResolveSubresource(BackBuffer!.NativeTexture, 0, PostProcessBackBuffer!.NativeTexture, 0, BackBuffer!.Format);
+
+        SwapChain.Present(1, 0);
+    }
+
+    private void RenderImGui()
+    {
         ImGuiRenderer.Render();
 
         Context.ResolveSubresource(BackBuffer!.NativeTexture, 0, MultiSampleBackBuffer!.NativeTexture, 0, BackBuffer!.Format);
+    }
+
+    private void Present()
+    {
 
         SwapChain.Present(1, 0);
     }
@@ -155,19 +221,20 @@ public unsafe class Renderer : IDisposable
     {
         DepthStencilViewDesc depthStencilViewDesc = default;
 
-        DepthStencilView.GetDesc(ref depthStencilViewDesc);
+        MultiSampleDepthStencilView.GetDesc(ref depthStencilViewDesc);
 
         DepthStencilDesc depthStencilDesc = default;
 
-        DepthStencilState.GetDesc(ref depthStencilDesc);
+        MultiSampleDepthStencilState.GetDesc(ref depthStencilDesc);
 
         BackBuffer!.Dispose();
         RenderTargetView!.Dispose();
         MultiSampleBackBuffer!.Dispose();
         MultiSampleRenderTargetView!.Dispose();
-        DepthBuffer!.NativeTexture.Dispose();
-        DepthStencilView!.Dispose();
-        DepthStencilState!.Dispose();
+        PostProcessBackBuffer!.Dispose();
+        MultiSampleDepthBuffer!.NativeTexture.Dispose();
+        MultiSampleDepthStencilView!.Dispose();
+        MultiSampleDepthStencilState!.Dispose();
 
         Context.Get().OMSetRenderTargets(0, null, null);
 
@@ -252,11 +319,13 @@ public unsafe class Renderer : IDisposable
         };
 
         SilkMarshal.ThrowHResult(Device.CreateRenderTargetView(MultiSampleBackBuffer.NativeTexture, multiSampleRenderTargetViewDesc, ref MultiSampleRenderTargetView));
+
+        PostProcessBackBuffer = new Texture2D(this, (int)backBufferDesc.Width, (int)backBufferDesc.Height, TextureType.None, new SampleDesc(1, 0), BindFlag.UnorderedAccess, BackBuffer.Format);
     }
 
     private void CreateDepthBuffer()
     {
-        DepthBuffer = new Texture2D(this, Window.Size.X, Window.Size.Y, TextureType.DepthBuffer, new SampleDesc(8, 0), BindFlag.DepthStencil | BindFlag.ShaderResource, Format.FormatR32Typeless, usage: Usage.Default);
+        MultiSampleDepthBuffer = new Texture2D(this, Window.Size.X, Window.Size.Y, TextureType.DepthBuffer, new SampleDesc(8, 0), BindFlag.DepthStencil, Format.FormatR32Typeless, usage: Usage.Default);
 
         DepthStencilViewDesc depthStencilViewDesc = new DepthStencilViewDesc()
         {
@@ -264,7 +333,7 @@ public unsafe class Renderer : IDisposable
             ViewDimension = DsvDimension.Texture2Dms,
         };
 
-        SilkMarshal.ThrowHResult(Device.CreateDepthStencilView(DepthBuffer.NativeTexture, depthStencilViewDesc, ref DepthStencilView));
+        SilkMarshal.ThrowHResult(Device.CreateDepthStencilView(MultiSampleDepthBuffer.NativeTexture, depthStencilViewDesc, ref MultiSampleDepthStencilView));
 
         DepthStencilDesc depthStencilDesc = new DepthStencilDesc()
         {
@@ -273,7 +342,7 @@ public unsafe class Renderer : IDisposable
             DepthFunc = ComparisonFunc.LessEqual,
         };
 
-        SilkMarshal.ThrowHResult(Device.CreateDepthStencilState(depthStencilDesc, ref DepthStencilState));
+        SilkMarshal.ThrowHResult(Device.CreateDepthStencilState(depthStencilDesc, ref MultiSampleDepthStencilState));
     }
 
     private void CreateViewport()
@@ -303,11 +372,11 @@ public unsafe class Renderer : IDisposable
 
         MultiSampleRenderTargetView.Dispose();
 
-        DepthBuffer?.Dispose();
+        MultiSampleDepthBuffer?.Dispose();
 
-        DepthStencilState.Dispose();
+        MultiSampleDepthStencilState.Dispose();
 
-        DepthStencilView.Dispose();
+        MultiSampleDepthStencilView.Dispose();
 
         Rasterizer?.Dispose();
 
@@ -329,14 +398,5 @@ public unsafe class Renderer : IDisposable
         Context.Dispose();
 
         Device.Dispose();
-
-        Device.QueryInterface<ID3D11Debug>().ReportLiveDeviceObjects(RldoFlags.Detail);
-
-        GC.Collect();
-
-        GC.WaitForPendingFinalizers();
-
-        Thread.Sleep(1000);
-        Thread.Sleep(1000);
     }
 }

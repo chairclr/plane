@@ -6,9 +6,9 @@ cbuffer VertexShaderBuffer : register(b0)
     float4x4 World; // 128 bytes
 };
 
-PS_INPUT VSMain(VS_INPUT input)
+STANDARD_PS_INPUT VSMain(STANDARD_VS_INPUT input)
 {
-    PS_INPUT output;
+    STANDARD_PS_INPUT output;
     
     output.uv = input.uv;
     

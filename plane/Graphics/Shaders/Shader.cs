@@ -4,7 +4,7 @@ namespace plane.Graphics.Shaders;
 
 public abstract class Shader : IDisposable
 {
-    internal ComPtr<ID3D10Blob> ShaderData = default;
+    internal Blob ShaderData = new Blob();
 
     internal abstract void Create(Renderer renderer);
 
@@ -21,7 +21,7 @@ public abstract class Shader : IDisposable
     {
         if (disposing) 
         {
-            ShaderData.Dispose();
+            ShaderData?.Dispose();
         }
     }
 }
