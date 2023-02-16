@@ -217,9 +217,6 @@ public unsafe class Renderer : IDisposable
 
         Context.CopyResource(PostProcessBackBuffer1!.NativeTexture, PostProcessBackBuffer2!.NativeTexture);
 
-        Context.CSSetUnorderedAccessViews(1, 1, ref PostProcessBackBuffer1!.UnorderedAccessView, null);
-        Context.CSSetUnorderedAccessViews(2, 1, ref PostProcessBackBuffer2!.UnorderedAccessView, null);
-
         PostProcessComputeShaderY!.Bind(this);
         Context.Dispatch(numThreadsX, numThreadsY, 1);
     }
