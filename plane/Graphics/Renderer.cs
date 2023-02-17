@@ -19,9 +19,9 @@ public unsafe class Renderer : IDisposable
 {
     public IWindow Window;
 
-    internal ComPtr<ID3D11Device> Device = default;
+    public ComPtr<ID3D11Device> Device = default;
 
-    internal ComPtr<ID3D11DeviceContext> Context = default;
+    public ComPtr<ID3D11DeviceContext> Context = default;
 
     private ComPtr<IDXGISwapChain1> SwapChain = default;
 
