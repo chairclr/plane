@@ -6,6 +6,7 @@ using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 using plane.Graphics;
+using plane.Graphics.Buffers;
 using Silk.NET.Direct3D11;
 
 namespace plane;

@@ -60,6 +60,11 @@ public abstract class Plane : IDisposable
 
     }
 
+    public virtual void RenderImGui()
+    {
+
+    }
+
     public virtual void Update()
     {
 

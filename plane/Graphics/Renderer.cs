@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using ImGuiNET;
 using plane.Diagnostics;
+using plane.Graphics.Buffers;
 using plane.Graphics.Providers;
 using plane.Graphics.Shaders;
 using Silk.NET.Core.Native;
@@ -25,8 +26,6 @@ public unsafe class Renderer : IDisposable
     private ComPtr<IDXGISwapChain1> SwapChain = default;
 
     private Texture2D? BackBuffer;
-
-    private ComPtr<ID3D11RenderTargetView> RenderTargetView = default;
 
     private Texture2D? MultiSampleBackBuffer;
 
@@ -229,12 +228,7 @@ public unsafe class Renderer : IDisposable
 
         ImGuiRenderer.Begin();
 
-        if (ImGui.Begin("Test"))
-        {
-            ImGui.SliderInt("Blur Size", ref ComputeShaderBufferData.BlurSize, 1, 64);
-
-            ImGui.End();
-        }
+        
 
         ImGuiRenderer.End();
     }
@@ -257,7 +251,6 @@ public unsafe class Renderer : IDisposable
         MultiSampleDepthStencilState.GetDesc(ref depthStencilDesc);
 
         BackBuffer!.Dispose();
-        RenderTargetView!.Dispose();
         MultiSampleBackBuffer!.Dispose();
         MultiSampleRenderTargetView!.Dispose();
         PostProcessBackBuffer1!.Dispose();
@@ -333,13 +326,6 @@ public unsafe class Renderer : IDisposable
             BackBuffer = new Texture2D(this, TextureType.BackBuffer);
 
             SilkMarshal.ThrowHResult(SwapChain.GetBuffer(0, out BackBuffer.NativeTexture));
-
-            RenderTargetViewDesc backBufferRenderTargetViewDesc = new RenderTargetViewDesc()
-            {
-                ViewDimension = RtvDimension.Texture2D,
-            };
-
-            SilkMarshal.ThrowHResult(Device.CreateRenderTargetView(BackBuffer.NativeTexture, backBufferRenderTargetViewDesc, ref RenderTargetView));
         }
 
         Texture2DDesc backBufferDesc = BackBuffer.GetTextureDescription();
@@ -419,8 +405,6 @@ public unsafe class Renderer : IDisposable
         ImGuiRenderer.Dispose();
 
         BackBuffer?.Dispose();
-
-        RenderTargetView.Dispose();
 
         MultiSampleBackBuffer?.Dispose();
 

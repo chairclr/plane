@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using plane.Graphics.Buffers;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
 using Silk.NET.DXGI;
@@ -45,8 +46,8 @@ public class Mesh : IDisposable
             }
         }
 
-        Renderer.Context.IASetVertexBuffers(0, 1, ref VertexBuffer.DataBuffer, VertexBuffer.Stride, offset);
-        Renderer.Context.IASetIndexBuffer(IndexBuffer.DataBuffer, Format.FormatR32Uint, 0);
+        Renderer.Context.IASetVertexBuffers(0, 1, ref VertexBuffer.NativeBuffer, VertexBuffer.Stride, offset);
+        Renderer.Context.IASetIndexBuffer(IndexBuffer.NativeBuffer, Format.FormatR32Uint, 0);
         Renderer.Context.DrawIndexed(IndexBuffer.Length, 0, 0);
     }
 

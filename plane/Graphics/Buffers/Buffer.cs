@@ -3,14 +3,14 @@ using Silk.NET.Core.Native;
 using Silk.NET.Direct3D.Compilers;
 using Silk.NET.Direct3D11;
 
-namespace plane.Graphics;
+namespace plane.Graphics.Buffers;
 
 public unsafe class Buffer<T> : IDisposable
     where T : unmanaged
 {
     private readonly Renderer Renderer;
 
-    public ComPtr<ID3D11Buffer> DataBuffer = default;
+    public ComPtr<ID3D11Buffer> NativeBuffer = default;
 
     /// <summary>
     /// Number of elements in buffer
@@ -53,7 +53,7 @@ public unsafe class Buffer<T> : IDisposable
                 PSysMem = bufferData
             };
 
-            SilkMarshal.ThrowHResult(Renderer.Device.CreateBuffer(bufferDesc, bufferSubresource, ref DataBuffer));
+            SilkMarshal.ThrowHResult(Renderer.Device.CreateBuffer(bufferDesc, bufferSubresource, ref NativeBuffer));
         }
     }
 
@@ -67,26 +67,26 @@ public unsafe class Buffer<T> : IDisposable
     {
         MappedSubresource mappedSubresource = new MappedSubresource();
 
-        SilkMarshal.ThrowHResult(Renderer.Context.Map(DataBuffer, 0, Map.WriteDiscard, 0, ref mappedSubresource));
+        SilkMarshal.ThrowHResult(Renderer.Context.Map(NativeBuffer, 0, Map.WriteDiscard, 0, ref mappedSubresource));
 
         Span<T> subresourceSpan = new Span<T>(mappedSubresource.PData, data.Length);
 
         data.CopyTo(subresourceSpan);
 
-        Renderer.Context.Unmap(DataBuffer, 0);
+        Renderer.Context.Unmap(NativeBuffer, 0);
     }
 
     public void WriteData(ReadOnlySpan<T> data, uint subresource, Map mapType, MapFlag mapFlags)
     {
         MappedSubresource mappedSubresource = new MappedSubresource();
 
-        Renderer.Context.Map(DataBuffer, subresource, mapType, (uint)mapFlags, ref mappedSubresource);
+        Renderer.Context.Map(NativeBuffer, subresource, mapType, (uint)mapFlags, ref mappedSubresource);
 
         Span<T> subresourceSpan = new Span<T>(mappedSubresource.PData, data.Length);
 
         data.CopyTo(subresourceSpan);
 
-        Renderer.Context.Unmap(DataBuffer, 0);
+        Renderer.Context.Unmap(NativeBuffer, 0);
     }
 
     public void WriteData(ref T data) => WriteData(new ReadOnlySpan<T>(Unsafe.AsPointer(ref data), 1));
@@ -98,22 +98,22 @@ public unsafe class Buffer<T> : IDisposable
         switch (to)
         {
             case BindTo.VertexShader:
-                Renderer.Context.VSSetConstantBuffers((uint)slot, 1, ref DataBuffer);
+                Renderer.Context.VSSetConstantBuffers((uint)slot, 1, ref NativeBuffer);
                 break;
             case BindTo.PixelShader:
-                Renderer.Context.PSSetConstantBuffers((uint)slot, 1, ref DataBuffer);
+                Renderer.Context.PSSetConstantBuffers((uint)slot, 1, ref NativeBuffer);
                 break;
             case BindTo.GeometryShader:
-                Renderer.Context.GSSetConstantBuffers((uint)slot, 1, ref DataBuffer);
+                Renderer.Context.GSSetConstantBuffers((uint)slot, 1, ref NativeBuffer);
                 break;
             case BindTo.ComputeShader:
-                Renderer.Context.CSSetConstantBuffers((uint)slot, 1, ref DataBuffer);
+                Renderer.Context.CSSetConstantBuffers((uint)slot, 1, ref NativeBuffer);
                 break;
             case BindTo.HullShader:
-                Renderer.Context.HSSetConstantBuffers((uint)slot, 1, ref DataBuffer);
+                Renderer.Context.HSSetConstantBuffers((uint)slot, 1, ref NativeBuffer);
                 break;
             case BindTo.DomainShader:
-                Renderer.Context.DSSetConstantBuffers((uint)slot, 1, ref DataBuffer);
+                Renderer.Context.DSSetConstantBuffers((uint)slot, 1, ref NativeBuffer);
                 break;
             default:
                 throw new ArgumentException($"Invalid binding target {to}.", nameof(to));
@@ -122,7 +122,7 @@ public unsafe class Buffer<T> : IDisposable
 
     public void Dispose()
     {
-        DataBuffer.Dispose();
+        NativeBuffer.Dispose();
 
         GC.SuppressFinalize(this);
     }
