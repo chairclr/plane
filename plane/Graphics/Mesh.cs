@@ -16,9 +16,9 @@ public class Mesh : IDisposable
 {
     private readonly Renderer Renderer;
 
-    private readonly Buffer<Vertex> VertexBuffer;
+    private readonly VertexBuffer<Vertex> VertexBuffer;
 
-    private readonly Buffer<int> IndexBuffer;
+    private readonly IndexBuffer<int> IndexBuffer;
 
     public readonly List<Texture2D> Textures;
 
@@ -26,9 +26,9 @@ public class Mesh : IDisposable
     {
         Renderer = renderer;
 
-        VertexBuffer = new Buffer<Vertex>(renderer, CollectionsMarshal.AsSpan(vertices), BindFlag.VertexBuffer);
+        VertexBuffer = new VertexBuffer<Vertex>(renderer, CollectionsMarshal.AsSpan(vertices));
 
-        IndexBuffer = new Buffer<int>(renderer, CollectionsMarshal.AsSpan(indicies), BindFlag.IndexBuffer);
+        IndexBuffer = new IndexBuffer<int>(renderer, CollectionsMarshal.AsSpan(indicies));
 
         Textures = textures;
     }

@@ -55,17 +55,13 @@ public unsafe class Renderer : IDisposable
 
     private readonly PixelShader? PixelShader;
 
-    private PixelShaderBuffer PixelShaderBufferData;
-
-    private readonly Buffer<PixelShaderBuffer> PixelShaderBuffer;
+    private readonly ConstantBuffer<PixelShaderBuffer> PixelShaderBuffer;
 
     private readonly ComputeShader? PostProcessComputeShaderX;
 
     private readonly ComputeShader? PostProcessComputeShaderY;
 
-    private ComputeShaderBuffer ComputeShaderBufferData = new ComputeShaderBuffer();
-
-    private readonly Buffer<ComputeShaderBuffer> ComputeShaderBuffer;
+    private readonly ConstantBuffer<ComputeShaderBuffer> ComputeShaderBuffer;
 
     private readonly Sampler PixelShaderSampler;
 
@@ -139,14 +135,14 @@ public unsafe class Renderer : IDisposable
             MaxLOD = float.MaxValue
         });
 
-        PixelShaderBuffer = new Buffer<PixelShaderBuffer>(this, ref PixelShaderBufferData, BindFlag.ConstantBuffer, Usage.Dynamic, CpuAccessFlag.Write);
+        PixelShaderBuffer = new ConstantBuffer<PixelShaderBuffer>(this);
 
         PostProcessComputeShaderX = ShaderCompiler.CompileFromFile<ComputeShader>(Path.Combine(planeRootFolder, "Shaders/PostProcessComputeShader.hlsl"), "CSMainX", ShaderModel.ComputeShader5_0);
         PostProcessComputeShaderX.Create(this);
         PostProcessComputeShaderY = ShaderCompiler.CompileFromFile<ComputeShader>(Path.Combine(planeRootFolder, "Shaders/PostProcessComputeShader.hlsl"), "CSMainY", ShaderModel.ComputeShader5_0);
         PostProcessComputeShaderY.Create(this);
 
-        ComputeShaderBuffer = new Buffer<ComputeShaderBuffer>(this, ref ComputeShaderBufferData, BindFlag.ConstantBuffer, Usage.Dynamic, CpuAccessFlag.Write);
+        ComputeShaderBuffer = new ConstantBuffer<ComputeShaderBuffer>(this);
 
         ImGuiRenderer = new ImGuiRenderer(this);
 
@@ -185,9 +181,9 @@ public unsafe class Renderer : IDisposable
         VertexShader!.Bind(this);
         PixelShader!.Bind(this);
 
-        PixelShaderBufferData.TimeElapsed += 1f / 144f;
+        PixelShaderBuffer.Data.TimeElapsed += 1f / 144f;
 
-        PixelShaderBuffer.WriteData(ref PixelShaderBufferData);
+        PixelShaderBuffer.WriteData();
         PixelShaderBuffer.Bind(0, BindTo.PixelShader);
 
         for (int i = 0; i < RenderObjects.Count; i++)
@@ -202,7 +198,7 @@ public unsafe class Renderer : IDisposable
     {
         Context.ResolveSubresource(PostProcessBackBuffer1!.NativeTexture, 0, MultiSampleBackBuffer!.NativeTexture, 0, PostProcessBackBuffer1!.Format);
 
-        ComputeShaderBuffer.WriteData(ref ComputeShaderBufferData);
+        ComputeShaderBuffer.WriteData();
         ComputeShaderBuffer.Bind(0, BindTo.ComputeShader);
 
         Context.CSSetUnorderedAccessViews(1, 1, ref PostProcessBackBuffer1!.UnorderedAccessView, null);

@@ -15,9 +15,7 @@ public abstract class RenderObject : IDisposable
 {
     public Transform Transform;
 
-    protected VertexShaderBuffer VertexShaderData;
-
-    private readonly Buffer<VertexShaderBuffer> VertexShaderDataBuffer;
+    protected readonly ConstantBuffer<VertexShaderBuffer> VertexShaderDataBuffer;
 
     protected Renderer Renderer;
 
@@ -26,18 +24,18 @@ public abstract class RenderObject : IDisposable
         Transform = new Transform();
         Renderer = renderer;
 
-        VertexShaderDataBuffer = new Buffer<VertexShaderBuffer>(Renderer, ref VertexShaderData, BindFlag.ConstantBuffer, usage: Usage.Dynamic, cpuAccessFlags: CpuAccessFlag.Write);
+        VertexShaderDataBuffer = new ConstantBuffer<VertexShaderBuffer>(Renderer);
     }
 
     public virtual void Render(Camera camera)
     {
-        VertexShaderData.World = Transform.WorldMatrix;
-        VertexShaderData.ViewProjection = camera.ViewMatrix * camera.ProjectionMatrix;
+        VertexShaderDataBuffer.Data.World = Transform.WorldMatrix;
+        VertexShaderDataBuffer.Data.ViewProjection = camera.ViewMatrix * camera.ProjectionMatrix;
 
-        VertexShaderData.World = Matrix4x4.Transpose(VertexShaderData.World);
-        VertexShaderData.ViewProjection = Matrix4x4.Transpose(VertexShaderData.ViewProjection);
+        VertexShaderDataBuffer.Data.World = Matrix4x4.Transpose(VertexShaderDataBuffer.Data.World);
+        VertexShaderDataBuffer.Data.ViewProjection = Matrix4x4.Transpose(VertexShaderDataBuffer.Data.ViewProjection);
 
-        VertexShaderDataBuffer.WriteData(ref VertexShaderData);
+        VertexShaderDataBuffer.WriteData();
 
         VertexShaderDataBuffer.Bind(0, BindTo.VertexShader);
     }
