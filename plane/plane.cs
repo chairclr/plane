@@ -76,6 +76,8 @@ public abstract class Plane : IDisposable
 
         Renderer = new Renderer(Window);
 
+        Renderer.ImGuiRenderCallback += RenderImGui;
+
         Load();
     }
 

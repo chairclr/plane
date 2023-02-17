@@ -43,6 +43,8 @@ public unsafe class Renderer : IDisposable
 
     private Texture2D? ImGuiBackBuffer;
 
+    public Action? ImGuiRenderCallback;
+
     private ComPtr<ID3D11RenderTargetView> ImGuiRenderTargetView = default;
 
     private Viewport Viewport = default;
@@ -61,7 +63,7 @@ public unsafe class Renderer : IDisposable
 
     private readonly ComputeShader? PostProcessComputeShaderY;
 
-    private readonly ConstantBuffer<ComputeShaderBuffer> ComputeShaderBuffer;
+    public readonly ConstantBuffer<ComputeShaderBuffer> ComputeShaderBuffer;
 
     private readonly Sampler PixelShaderSampler;
 
@@ -192,8 +194,6 @@ public unsafe class Renderer : IDisposable
         }
     }
 
-    
-
     private void PostProcessScene()
     {
         Context.ResolveSubresource(PostProcessBackBuffer1!.NativeTexture, 0, MultiSampleBackBuffer!.NativeTexture, 0, PostProcessBackBuffer1!.Format);
@@ -224,7 +224,7 @@ public unsafe class Renderer : IDisposable
 
         ImGuiRenderer.Begin();
 
-        
+        ImGuiRenderCallback?.Invoke();
 
         ImGuiRenderer.End();
     }

@@ -54,6 +54,15 @@ public class TestPlaneGame : Plane
         }
     }
 
+    public override void RenderImGui()
+    {
+        ImGui.Begin("Test");
+
+        ImGui.SliderInt("Blur Size", ref Renderer!.ComputeShaderBuffer.Data.BlurSize, 1, 64);
+
+        ImGui.End();
+    }
+
     public override void Update()
     {
 
