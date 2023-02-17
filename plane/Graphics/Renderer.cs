@@ -111,8 +111,7 @@ public unsafe class Renderer : IDisposable
 
         string planeRootFolder = Path.GetDirectoryName(typeof(plane.Plane).Assembly.Location)!;
 
-        VertexShader = ShaderCompiler.CompileFromFile<VertexShader>(Path.Combine(planeRootFolder, "Shaders/VertexShader.hlsl"), "VSMain", ShaderModel.VertexShader5_0);
-        VertexShader.Create(this);
+        VertexShader = ShaderCompiler.CompileFromFile<VertexShader>(this,Path.Combine(planeRootFolder, "Shaders/VertexShader.hlsl"), "VSMain", ShaderModel.VertexShader5_0);
 
         InputElementDesc[] vertexLayout =
         {
@@ -123,8 +122,7 @@ public unsafe class Renderer : IDisposable
 
         VertexShader.SetInputLayout(this, vertexLayout);
 
-        PixelShader = ShaderCompiler.CompileFromFile<PixelShader>(Path.Combine(planeRootFolder, "Shaders/PixelShader.hlsl"), "PSMain", ShaderModel.PixelShader5_0);
-        PixelShader.Create(this);
+        PixelShader = ShaderCompiler.CompileFromFile<PixelShader>(this, Path.Combine(planeRootFolder, "Shaders/PixelShader.hlsl"), "PSMain", ShaderModel.PixelShader5_0);
 
         PixelShaderSampler = new Sampler(this, new SamplerDesc()
         {
@@ -139,10 +137,8 @@ public unsafe class Renderer : IDisposable
 
         PixelShaderBuffer = new ConstantBuffer<PixelShaderBuffer>(this);
 
-        PostProcessComputeShaderX = ShaderCompiler.CompileFromFile<ComputeShader>(Path.Combine(planeRootFolder, "Shaders/PostProcessComputeShader.hlsl"), "CSMainX", ShaderModel.ComputeShader5_0);
-        PostProcessComputeShaderX.Create(this);
-        PostProcessComputeShaderY = ShaderCompiler.CompileFromFile<ComputeShader>(Path.Combine(planeRootFolder, "Shaders/PostProcessComputeShader.hlsl"), "CSMainY", ShaderModel.ComputeShader5_0);
-        PostProcessComputeShaderY.Create(this);
+        PostProcessComputeShaderX = ShaderCompiler.CompileFromFile<ComputeShader>(this, Path.Combine(planeRootFolder, "Shaders/PostProcessComputeShader.hlsl"), "CSMainX", ShaderModel.ComputeShader5_0);
+        PostProcessComputeShaderY = ShaderCompiler.CompileFromFile<ComputeShader>(this, Path.Combine(planeRootFolder, "Shaders/PostProcessComputeShader.hlsl"), "CSMainY", ShaderModel.ComputeShader5_0);
 
         ComputeShaderBuffer = new ConstantBuffer<ComputeShaderBuffer>(this);
 

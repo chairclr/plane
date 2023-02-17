@@ -37,7 +37,7 @@ public class ShaderCompiler
     public const uint SHADER_FLAGS2_FORCE_ROOT_SIGNATURE_1_0 = (1 << 4);
     public const uint SHADER_FLAGS2_FORCE_ROOT_SIGNATURE_1_1 = (1 << 5);
 
-    public unsafe static T CompileFromFile<T>(string path, string entryPoint, string shaderModel)
+    public unsafe static T CompileFromFile<T>(Renderer renderer, string path, string entryPoint, string shaderModel)
         where T : Shader, new()
     {
         T shader = new T();
@@ -60,10 +60,12 @@ public class ShaderCompiler
 
         ErrorCheck(hr, shaderErrors);
 
+        shader.Create(renderer);
+
         return shader;
     }
 
-    public unsafe static T CompileFromSourceCode<T>(string src, string entryPoint, string shaderModel)
+    public unsafe static T CompileFromSourceCode<T>(Renderer renderer, string src, string entryPoint, string shaderModel)
         where T : Shader, new()
     {
         T shader = new T();
@@ -83,6 +85,8 @@ public class ShaderCompiler
         SilkMarshal.FreeString(nativeSourceString);
 
         ErrorCheck(hr, shaderErrors);
+
+        shader.Create(renderer);
 
         return shader;
     }
