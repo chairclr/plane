@@ -236,14 +236,6 @@ public unsafe class Renderer : IDisposable
 
     internal void Resize()
     {
-        DepthStencilViewDesc depthStencilViewDesc = default;
-
-        MultiSampleDepthStencilView.GetDesc(ref depthStencilViewDesc);
-
-        DepthStencilDesc depthStencilDesc = default;
-
-        MultiSampleDepthStencilState.GetDesc(ref depthStencilDesc);
-
         BackBuffer!.Dispose();
         MultiSampleBackBuffer!.Dispose();
         MultiSampleRenderTargetView!.Dispose();
@@ -320,6 +312,8 @@ public unsafe class Renderer : IDisposable
             BackBuffer = new Texture2D(this, TextureType.BackBuffer);
 
             SilkMarshal.ThrowHResult(SwapChain.GetBuffer(0, out BackBuffer.NativeTexture));
+
+            BackBuffer.CacheDescription();
         }
 
         Texture2DDesc backBufferDesc = BackBuffer.GetTextureDescription();
@@ -327,9 +321,7 @@ public unsafe class Renderer : IDisposable
         // MultiSampleBackBuffer
         {
 
-            BackBuffer.Format = backBufferDesc.Format;
-
-            MultiSampleBackBuffer = new Texture2D(this, (int)backBufferDesc.Width, (int)backBufferDesc.Height, TextureType.None, new SampleDesc(8, 0), BindFlag.RenderTarget, BackBuffer.Format);
+            MultiSampleBackBuffer = new Texture2D(this, BackBuffer.Width, BackBuffer.Height, TextureType.None, new SampleDesc(8, 0), BindFlag.RenderTarget, BackBuffer.Format);
 
             RenderTargetViewDesc multiSampleRenderTargetViewDesc = new RenderTargetViewDesc()
             {
@@ -340,13 +332,13 @@ public unsafe class Renderer : IDisposable
         }
 
 
-        PostProcessBackBuffer1 = new Texture2D(this, (int)backBufferDesc.Width, (int)backBufferDesc.Height, TextureType.None, new SampleDesc(1, 0), BindFlag.UnorderedAccess, BackBuffer.Format);
+        PostProcessBackBuffer1 = new Texture2D(this, BackBuffer.Width, BackBuffer.Height, TextureType.None, new SampleDesc(1, 0), BindFlag.UnorderedAccess, BackBuffer.Format);
 
-        PostProcessBackBuffer2 = new Texture2D(this, (int)backBufferDesc.Width, (int)backBufferDesc.Height, TextureType.None, new SampleDesc(1, 0), BindFlag.UnorderedAccess, BackBuffer.Format);
+        PostProcessBackBuffer2 = new Texture2D(this, BackBuffer.Width, BackBuffer.Height, TextureType.None, new SampleDesc(1, 0), BindFlag.UnorderedAccess, BackBuffer.Format);
 
         // ImGuiBackBuffer
         {
-            ImGuiBackBuffer = new Texture2D(this, (int)backBufferDesc.Width, (int)backBufferDesc.Height, TextureType.None, new SampleDesc(1, 0), BindFlag.RenderTarget, BackBuffer.Format);
+            ImGuiBackBuffer = new Texture2D(this, BackBuffer.Width, BackBuffer.Height, TextureType.None, new SampleDesc(1, 0), BindFlag.RenderTarget, BackBuffer.Format);
 
             RenderTargetViewDesc imGuiRenderTargetViewDesc = new RenderTargetViewDesc()
             {
@@ -364,7 +356,7 @@ public unsafe class Renderer : IDisposable
         DepthStencilViewDesc depthStencilViewDesc = new DepthStencilViewDesc()
         {
             Format = Format.FormatD32Float,
-            ViewDimension = DsvDimension.Texture2Dms,
+            ViewDimension = DsvDimension.Texture2Dms
         };
 
         SilkMarshal.ThrowHResult(Device.CreateDepthStencilView(MultiSampleDepthBuffer.NativeTexture, depthStencilViewDesc, ref MultiSampleDepthStencilView));
