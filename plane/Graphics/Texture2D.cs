@@ -16,13 +16,13 @@ public unsafe class Texture2D : IDisposable
 
     public readonly TextureType TextureType;
 
-    internal ComPtr<ID3D11Texture2D> NativeTexture = default;
+    public ComPtr<ID3D11Texture2D> NativeTexture = default;
 
-    internal Format Format = Format.FormatUnknown;
+    public Format Format = Format.FormatUnknown;
 
     private ComPtr<ID3D11ShaderResourceView> _shaderResourceView = default;
 
-    internal ref ComPtr<ID3D11ShaderResourceView> ShaderResourceView
+    public ref ComPtr<ID3D11ShaderResourceView> ShaderResourceView
     {
         get
         {
@@ -37,7 +37,7 @@ public unsafe class Texture2D : IDisposable
 
     private ComPtr<ID3D11UnorderedAccessView> _unorderedAccessView = default;
 
-    internal ref ComPtr<ID3D11UnorderedAccessView> UnorderedAccessView
+    public ref ComPtr<ID3D11UnorderedAccessView> UnorderedAccessView
     {
         get
         {
