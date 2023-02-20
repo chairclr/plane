@@ -128,7 +128,7 @@ public unsafe class Texture3D : IDisposable
             Usage = usage,
             CPUAccessFlags = (uint)cpuAccessFlags,
             MiscFlags = miscFlag,
-            MipLevels = mipLevels
+            MipLevels = mipLevels,
         };
 
         SilkMarshal.ThrowHResult(Renderer.Device.CreateTexture3D(desc, subresourceData, ref NativeTexture));
@@ -205,6 +205,8 @@ public unsafe class Texture3D : IDisposable
             Format = textureDesc.Format,
             ViewDimension = UavDimension.Texture3D,
         };
+
+        unorderedAccessViewDesc.Texture3D.FirstWSlice = uint.MaxValue;
 
         SilkMarshal.ThrowHResult(Renderer.Device.CreateUnorderedAccessView(NativeTexture, unorderedAccessViewDesc, ref accessView));
 
