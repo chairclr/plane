@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Silk.NET.Assimp;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
 using Silk.NET.DXGI;
@@ -14,13 +15,19 @@ public unsafe class Texture2D : IDisposable
 {
     private readonly Renderer Renderer;
 
-    public readonly TextureType TextureType;
-
     public ComPtr<ID3D11Texture2D> NativeTexture = default;
+
+    public readonly TextureType TextureType;
 
     public Format Format = Format.FormatUnknown;
 
+    public int Width = 0;
+
+    public int Height = 0;
+
     private ComPtr<ID3D11ShaderResourceView> _shaderResourceView = default;
+
+    private ComPtr<ID3D11UnorderedAccessView> _unorderedAccessView = default;
 
     public ref ComPtr<ID3D11ShaderResourceView> ShaderResourceView
     {
@@ -34,8 +41,6 @@ public unsafe class Texture2D : IDisposable
             return ref _shaderResourceView;
         }
     }
-
-    private ComPtr<ID3D11UnorderedAccessView> _unorderedAccessView = default;
 
     public ref ComPtr<ID3D11UnorderedAccessView> UnorderedAccessView
     {
@@ -56,6 +61,12 @@ public unsafe class Texture2D : IDisposable
 
         TextureType = textureType;
 
+        Format = desc.Format;
+
+        Width = (int)desc.Width;
+
+        Height = (int)desc.Height;
+
         SilkMarshal.ThrowHResult(Renderer.Device.CreateTexture2D(desc, null, ref NativeTexture));
     }
 
@@ -66,6 +77,10 @@ public unsafe class Texture2D : IDisposable
         TextureType = textureType;
 
         Format = format;
+
+        Width = width;
+
+        Height = height;
 
         sampleDesc ??= new SampleDesc(1, 0);
 
@@ -94,6 +109,10 @@ public unsafe class Texture2D : IDisposable
 
         Format = format;
 
+        Width = width;
+
+        Height = height;
+
         sampleDesc ??= new SampleDesc(1, 0);
 
         Texture2DDesc desc = new Texture2DDesc()
@@ -120,6 +139,10 @@ public unsafe class Texture2D : IDisposable
         TextureType = textureType;
 
         Format = Format.FormatR8G8B8A8Unorm;
+
+        Width = image.Width;
+
+        Height = image.Height;
 
         sampleDesc ??= new SampleDesc(1, 0);
 
@@ -173,6 +196,17 @@ public unsafe class Texture2D : IDisposable
         Renderer = renderer;
 
         TextureType = textureType;
+    }
+
+    public void CacheDescription()
+    {
+        Texture2DDesc desc = GetTextureDescription();
+
+        Format = desc.Format;
+
+        Width = (int)desc.Width;
+
+        Height = (int)desc.Height;
     }
 
     internal Texture2DDesc GetTextureDescription()
