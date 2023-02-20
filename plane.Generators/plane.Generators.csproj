@@ -2,8 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-	  <LangVersion>preview</LangVersion>
+    <LangVersion>preview</LangVersion>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+	<Nullable>Enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

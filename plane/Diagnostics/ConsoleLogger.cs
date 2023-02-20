@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Silk.NET.Assimp;
+﻿namespace plane.Diagnostics;
 
-namespace plane.Diagnostics;
 public class ConsoleLogger : Logger
 {
     private object ConsoleLock = new object();

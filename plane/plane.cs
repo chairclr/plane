@@ -1,11 +1,5 @@
-﻿using System.Diagnostics;
-using System.Numerics;
-using ImGuiNET;
-using plane.Diagnostics;
-using plane.Graphics;
-using Silk.NET.Direct3D11;
+﻿using System.Numerics;
 using Silk.NET.Maths;
-using Silk.NET.SDL;
 using Silk.NET.Windowing;
 using Silk.NET.Windowing.Sdl;
 using Renderer = plane.Graphics.Renderer;
@@ -122,7 +116,7 @@ public abstract class Plane : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing) 
+        if (disposing)
         {
             Renderer?.Dispose();
 

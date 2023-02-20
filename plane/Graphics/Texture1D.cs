@@ -1,13 +1,8 @@
-﻿using System.Net.Http.Headers;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Silk.NET.Assimp;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
 using Silk.NET.DXGI;
-using Silk.NET.SDL;
-using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace plane.Graphics;
@@ -275,7 +270,7 @@ public unsafe class Texture1D : IDisposable, IMappable
         NativeTexture.Dispose();
 
         _shaderResourceView.Dispose();
-        
+
         GC.SuppressFinalize(this);
     }
 

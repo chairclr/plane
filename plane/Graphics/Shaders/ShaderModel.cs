@@ -1,4 +1,5 @@
 ﻿namespace plane.Graphics.Shaders;
+
 public class ShaderModel
 {
     public static readonly string VertexShader5_0 = "vs_5_0";

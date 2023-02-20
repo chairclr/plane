@@ -8,7 +8,7 @@ public class PixelShader : Shader, IDisposable
 {
     internal ComPtr<ID3D11PixelShader> NativeShader = default;
 
-    public PixelShader(Renderer renderer) 
+    public PixelShader(Renderer renderer)
         : base(renderer)
     {
 

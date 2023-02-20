@@ -1,13 +1,7 @@
-﻿using System.Net.Http.Headers;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using Silk.NET.Assimp;
+﻿using System.Runtime.CompilerServices;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
 using Silk.NET.DXGI;
-using Silk.NET.SDL;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace plane.Graphics;
 
@@ -134,7 +128,7 @@ public unsafe class Texture3D : IDisposable, IMappable
         SilkMarshal.ThrowHResult(Renderer.Device.CreateTexture3D(desc, subresourceData, ref NativeTexture));
     }
 
-    public Texture3D(Renderer renderer, int width, int height, int depth,  Usage usage = Usage.Default)
+    public Texture3D(Renderer renderer, int width, int height, int depth, Usage usage = Usage.Default)
         : this(renderer, width, height, depth, TextureType.Diffuse, usage: usage)
     {
 
@@ -261,7 +255,7 @@ public unsafe class Texture3D : IDisposable, IMappable
         NativeTexture.Dispose();
 
         _shaderResourceView.Dispose();
-        
+
         GC.SuppressFinalize(this);
     }
 }

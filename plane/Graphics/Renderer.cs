@@ -1,8 +1,4 @@
-﻿using System.Diagnostics;
-using System.Net.NetworkInformation;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using ImGuiNET;
+﻿using System.Runtime.CompilerServices;
 using plane.Diagnostics;
 using plane.Graphics.Buffers;
 using plane.Graphics.Providers;
@@ -10,7 +6,6 @@ using plane.Graphics.Shaders;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
 using Silk.NET.DXGI;
-using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
 namespace plane.Graphics;

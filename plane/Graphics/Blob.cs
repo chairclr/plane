@@ -1,8 +1,5 @@
-﻿
-using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System.Runtime.CompilerServices;
 using Silk.NET.Core.Native;
-using Silk.NET.Direct3D11;
 
 namespace plane.Graphics;
 
@@ -10,7 +7,7 @@ public class Blob : IDisposable
 {
     internal ComPtr<ID3D10Blob> NativeBlob = default;
 
-    public bool IsNull => Unsafe.IsNullRef(ref NativeBlob.Get()); 
+    public bool IsNull => Unsafe.IsNullRef(ref NativeBlob.Get());
 
     public nuint Size => NativeBlob.GetBufferSize();
 
@@ -24,7 +21,7 @@ public class Blob : IDisposable
     public void Dispose()
     {
         NativeBlob.Dispose();
-        
+
         GC.SuppressFinalize(this);
     }
 }

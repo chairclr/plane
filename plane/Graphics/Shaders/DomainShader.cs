@@ -8,7 +8,7 @@ public class DomainShader : Shader, IDisposable
 {
     internal ComPtr<ID3D11DomainShader> NativeShader = default;
 
-    public DomainShader(Renderer renderer) 
+    public DomainShader(Renderer renderer)
         : base(renderer)
     {
 

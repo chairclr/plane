@@ -36,7 +36,7 @@ public unsafe class UnorderedAccessBuffer<T> : Buffer, IDisposable
             BindFlags = (uint)BindFlag.UnorderedAccess,
             Usage = Writable ? Usage.Dynamic : Usage.Default,
             ByteWidth = Size,
-            CPUAccessFlags = (uint)(Writable ? CpuAccessFlag.Write : CpuAccessFlag.None) 
+            CPUAccessFlags = (uint)(Writable ? CpuAccessFlag.Write : CpuAccessFlag.None)
         };
 
         SubresourceData subresourceData = new SubresourceData()

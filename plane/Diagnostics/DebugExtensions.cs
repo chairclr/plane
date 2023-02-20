@@ -91,21 +91,21 @@ public static class DebugExtensions
                 {
                     continue;
                 }
-        
+
                 lock (infoQueueLock)
                 {
                     for (ulong i = 0; i < infoQueue.GetNumStoredMessages(); i++)
                     {
                         nuint msgByteLength = 0;
                         SilkMarshal.ThrowHResult(infoQueue.Get().GetMessageA(i, null, ref msgByteLength));
-        
+
                         byte[] msgBytes = new byte[msgByteLength];
                         ref Message msg = ref Unsafe.As<byte, Message>(ref msgBytes[0]);
                         SilkMarshal.ThrowHResult(infoQueue.GetMessageA(i, ref msg, ref msgByteLength));
-        
+
                         callback(new D3DDebugMessage(msg));
                     }
-        
+
                     infoQueue.ClearStoredMessages();
                 }
             }

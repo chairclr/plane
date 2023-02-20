@@ -1,9 +1,6 @@
-﻿using System.Text;
-using plane.Diagnostics;
+﻿using plane.Diagnostics;
 using plane.Graphics.Providers;
 using Silk.NET.Core.Native;
-using Silk.NET.Direct3D.Compilers;
-using Silk.NET.Direct3D11;
 
 namespace plane.Graphics.Shaders;
 

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Silk.NET.Assimp;
-using Silk.NET.Direct3D.Compilers;
+﻿using Silk.NET.Assimp;
 
 namespace plane.Graphics.Providers;
 

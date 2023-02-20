@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using plane.Graphics;
+﻿using plane.Graphics;
 
 namespace plane;
 
@@ -41,7 +36,7 @@ public class RenderModel : RenderObject
     {
         base.Dispose(disposing);
 
-        if (disposing) 
+        if (disposing)
         {
             Model?.Dispose();
         }

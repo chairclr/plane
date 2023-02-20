@@ -8,7 +8,7 @@ public class ComputeShader : Shader, IDisposable
 {
     internal ComPtr<ID3D11ComputeShader> NativeShader = default;
 
-    public ComputeShader(Renderer renderer) 
+    public ComputeShader(Renderer renderer)
         : base(renderer)
     {
 

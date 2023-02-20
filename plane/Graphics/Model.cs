@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Reflection.Metadata.Ecma335;
+﻿using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using plane.Diagnostics;
 using plane.Graphics.Providers;
 using Silk.NET.Assimp;
-using Silk.NET.Direct3D.Compilers;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace plane.Graphics;

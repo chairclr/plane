@@ -1,11 +1,8 @@
-﻿using System.Net.Http.Headers;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Silk.NET.Assimp;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
 using Silk.NET.DXGI;
-using Silk.NET.SDL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -302,7 +299,7 @@ public unsafe class Texture2D : IDisposable, IMappable
         NativeTexture.Dispose();
 
         _shaderResourceView.Dispose();
-        
+
         GC.SuppressFinalize(this);
     }
 

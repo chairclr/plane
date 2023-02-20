@@ -8,7 +8,7 @@ public class HullShader : Shader, IDisposable
 {
     internal ComPtr<ID3D11HullShader> NativeShader = default;
 
-    public HullShader(Renderer renderer) 
+    public HullShader(Renderer renderer)
         : base(renderer)
     {
 

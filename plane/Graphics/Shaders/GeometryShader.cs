@@ -8,7 +8,7 @@ public class GeometryShader : Shader, IDisposable
 {
     internal ComPtr<ID3D11GeometryShader> NativeShader = default;
 
-    public GeometryShader(Renderer renderer) 
+    public GeometryShader(Renderer renderer)
         : base(renderer)
     {
 
