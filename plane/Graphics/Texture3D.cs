@@ -206,7 +206,7 @@ public unsafe class Texture3D : IDisposable
             ViewDimension = UavDimension.Texture3D,
         };
 
-        unorderedAccessViewDesc.Texture3D.FirstWSlice = uint.MaxValue;
+        unorderedAccessViewDesc.Texture3D.WSize = uint.MaxValue;
 
         SilkMarshal.ThrowHResult(Renderer.Device.CreateUnorderedAccessView(NativeTexture, unorderedAccessViewDesc, ref accessView));
 
