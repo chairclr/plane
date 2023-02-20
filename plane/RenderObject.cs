@@ -13,11 +13,11 @@ namespace plane;
 
 public abstract class RenderObject : IDisposable
 {
+    protected readonly Renderer Renderer;
+
     public Transform Transform;
 
     protected readonly ConstantBuffer<VertexShaderBuffer> VertexShaderDataBuffer;
-
-    protected Renderer Renderer;
 
     public RenderObject(Renderer renderer)
     {

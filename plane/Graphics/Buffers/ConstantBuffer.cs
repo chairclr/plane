@@ -4,7 +4,7 @@ using Silk.NET.Direct3D11;
 
 namespace plane.Graphics.Buffers;
 
-public unsafe class ConstantBuffer<T> : Buffer<T>, IDisposable
+public unsafe class ConstantBuffer<T> : Buffer, IDisposable
     where T : unmanaged
 {
     public T Data;

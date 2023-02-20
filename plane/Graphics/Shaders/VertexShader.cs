@@ -1,6 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 using Silk.NET.Core.Native;
-using Silk.NET.Direct3D.Compilers;
 using Silk.NET.Direct3D11;
 
 namespace plane.Graphics.Shaders;

@@ -5,7 +5,7 @@ using Silk.NET.DXGI;
 
 namespace plane.Graphics.Buffers;
 
-public unsafe class UnorderedAccessBuffer<T> : Buffer<T>, IDisposable
+public unsafe class UnorderedAccessBuffer<T> : Buffer, IDisposable
     where T : unmanaged
 {
     public uint Length { get; private set; }

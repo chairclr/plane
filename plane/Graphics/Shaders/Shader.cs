@@ -1,6 +1,4 @@
-﻿using Silk.NET.Core.Native;
-
-namespace plane.Graphics.Shaders;
+﻿namespace plane.Graphics.Shaders;
 
 public abstract class Shader : IDisposable
 {
@@ -26,7 +24,7 @@ public abstract class Shader : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing) 
+        if (disposing)
         {
             ShaderData?.Dispose();
         }

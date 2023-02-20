@@ -49,19 +49,19 @@ public unsafe class Renderer : IDisposable
 
     private Viewport Viewport = default;
 
-    private readonly Rasterizer? Rasterizer;
+    private readonly Rasterizer Rasterizer;
 
     private readonly ComPtr<ID3D11BlendState> BlendState = default;
 
-    private readonly VertexShader? VertexShader;
+    private readonly VertexShader VertexShader;
 
-    private readonly PixelShader? PixelShader;
+    private readonly PixelShader PixelShader;
 
     private readonly ConstantBuffer<PixelShaderBuffer> PixelShaderBuffer;
 
-    private readonly ComputeShader? PostProcessComputeShaderX;
+    private readonly ComputeShader PostProcessComputeShaderX;
 
-    private readonly ComputeShader? PostProcessComputeShaderY;
+    private readonly ComputeShader PostProcessComputeShaderY;
 
     public readonly ConstantBuffer<ComputeShaderBuffer> ComputeShaderBuffer;
 
@@ -161,27 +161,34 @@ public unsafe class Renderer : IDisposable
     private void RenderScene()
     {
         Context.OMSetRenderTargets(1, ref MultiSampleRenderTargetView, MultiSampleDepthStencilView);
+
         Context.OMSetDepthStencilState(MultiSampleDepthStencilState, 0);
+
         Context.OMSetBlendState(BlendState, null, 0xFFFFFFFF);
 
         float[] clearColor = new float[] { 0.55f, 0.7f, 0.75f, 1f };
         Context.ClearRenderTargetView(MultiSampleRenderTargetView, ref clearColor[0]);
+
         Context.ClearDepthStencilView(MultiSampleDepthStencilView, (uint)(ClearFlag.Depth | ClearFlag.Stencil), 1.0f, 0);
 
-        Context.IASetInputLayout(VertexShader!.NativeInputLayout);
+        Context.IASetInputLayout(VertexShader.NativeInputLayout);
+
         Context.IASetPrimitiveTopology(D3DPrimitiveTopology.D3D10PrimitiveTopologyTrianglelist);
 
         Rasterizer!.Bind();
+
         Context.RSSetViewports(1, Viewport);
 
-        PixelShaderSampler.Bind(0, BindTo.PixelShader);
+        VertexShader.Bind();
 
-        VertexShader!.Bind();
-        PixelShader!.Bind();
+        PixelShader.Bind();
+
+        PixelShaderSampler.Bind(0, BindTo.PixelShader);
 
         PixelShaderBuffer.Data.TimeElapsed += 1f / 144f;
 
         PixelShaderBuffer.WriteData();
+
         PixelShaderBuffer.Bind(0, BindTo.PixelShader);
 
         for (int i = 0; i < RenderObjects.Count; i++)

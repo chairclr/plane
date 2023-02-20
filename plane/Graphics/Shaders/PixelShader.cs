@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using plane.Graphics.Buffers;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D11;
 
@@ -9,8 +8,10 @@ public class PixelShader : Shader, IDisposable
 {
     internal ComPtr<ID3D11PixelShader> NativeShader = default;
 
-    public PixelShader(Renderer renderer) : base(renderer)
+    public PixelShader(Renderer renderer) 
+        : base(renderer)
     {
+
     }
 
     internal unsafe override void Create()
