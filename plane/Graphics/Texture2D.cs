@@ -11,7 +11,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace plane.Graphics;
 
-public unsafe class Texture2D : IDisposable
+public unsafe class Texture2D : IDisposable, IMappable
 {
     private readonly Renderer Renderer;
 
@@ -207,6 +207,49 @@ public unsafe class Texture2D : IDisposable
         Width = (int)desc.Width;
 
         Height = (int)desc.Height;
+    }
+
+    public MappedSubresource MapRead(int subresource = 0)
+    {
+        MappedSubresource mappedSubresource = new MappedSubresource();
+
+        SilkMarshal.ThrowHResult(Renderer.Context.Map(NativeTexture, (uint)subresource, Map.Read, 0, ref mappedSubresource));
+
+        return mappedSubresource;
+    }
+
+    public MappedSubresource MapWrite(int subresource = 0)
+    {
+        MappedSubresource mappedSubresource = new MappedSubresource();
+
+        SilkMarshal.ThrowHResult(Renderer.Context.Map(NativeTexture, (uint)subresource, Map.Write, 0, ref mappedSubresource));
+
+        return mappedSubresource;
+    }
+
+    public ReadOnlySpan<T> MapReadSpan<T>(int subresource = 0)
+    {
+        if (Format == Format.FormatUnknown || Width == 0 || Height == 0)
+        {
+            CacheDescription();
+        }
+
+        return new ReadOnlySpan<T>(MapRead(subresource).PData, Width * Height);
+    }
+
+    public Span<T> MapWriteSpan<T>(int subresource = 0)
+    {
+        if (Format == Format.FormatUnknown || Width == 0 || Height == 0)
+        {
+            CacheDescription();
+        }
+
+        return new Span<T>(MapWrite(subresource).PData, Width * Height);
+    }
+
+    public void Unmap()
+    {
+        Renderer.Context.Unmap(NativeTexture, 0);
     }
 
     internal Texture2DDesc GetTextureDescription()
