@@ -38,9 +38,9 @@ public class ShaderCompiler
     public const uint SHADER_FLAGS2_FORCE_ROOT_SIGNATURE_1_1 = (1 << 5);
 
     public unsafe static T CompileFromFile<T>(Renderer renderer, string path, string entryPoint, string shaderModel)
-        where T : Shader, new()
+        where T : Shader
     {
-        T shader = new T();
+        T shader = (T)Activator.CreateInstance(typeof(T), renderer)!;
 
         Blob shaderErrors = new Blob();
 
@@ -60,7 +60,7 @@ public class ShaderCompiler
 
         ErrorCheck(hr, shaderErrors);
 
-        shader.Create(renderer);
+        shader.Create();
 
         return shader;
     }
@@ -68,7 +68,7 @@ public class ShaderCompiler
     public unsafe static T CompileFromSourceCode<T>(Renderer renderer, string src, string entryPoint, string shaderModel)
         where T : Shader, new()
     {
-        T shader = new T();
+        T shader = (T)Activator.CreateInstance(typeof(T), renderer)!;
 
         Blob shaderErrors = new Blob();
 
@@ -86,7 +86,7 @@ public class ShaderCompiler
 
         ErrorCheck(hr, shaderErrors);
 
-        shader.Create(renderer);
+        shader.Create();
 
         return shader;
     }

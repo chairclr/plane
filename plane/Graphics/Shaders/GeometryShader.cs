@@ -8,14 +8,20 @@ public class GeometryShader : Shader, IDisposable
 {
     internal ComPtr<ID3D11GeometryShader> NativeShader = default;
 
-    internal unsafe override void Create(Renderer renderer)
+    public GeometryShader(Renderer renderer) 
+        : base(renderer)
     {
-        SilkMarshal.ThrowHResult(renderer.Device.CreateGeometryShader(ShaderData.BufferPointer, ShaderData.Size, ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
+
     }
 
-    public unsafe override void Bind(Renderer renderer)
+    internal unsafe override void Create()
     {
-        renderer.Context.GSSetShader(NativeShader, null, 0);
+        SilkMarshal.ThrowHResult(Renderer.Device.CreateGeometryShader(ShaderData.BufferPointer, ShaderData.Size, ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
+    }
+
+    public unsafe override void Bind()
+    {
+        Renderer.Context.GSSetShader(NativeShader, null, 0);
     }
 
     protected override void Dispose(bool disposing)

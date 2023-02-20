@@ -8,14 +8,20 @@ public class HullShader : Shader, IDisposable
 {
     internal ComPtr<ID3D11HullShader> NativeShader = default;
 
-    internal unsafe override void Create(Renderer renderer)
+    public HullShader(Renderer renderer) 
+        : base(renderer)
     {
-        SilkMarshal.ThrowHResult(renderer.Device.CreateHullShader(ShaderData.BufferPointer, ShaderData.Size, ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
+
     }
 
-    public unsafe override void Bind(Renderer renderer)
+    internal unsafe override void Create()
     {
-        renderer.Context.HSSetShader(NativeShader, null, 0);
+        SilkMarshal.ThrowHResult(Renderer.Device.CreateHullShader(ShaderData.BufferPointer, ShaderData.Size, ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
+    }
+
+    public unsafe override void Bind()
+    {
+        Renderer.Context.HSSetShader(NativeShader, null, 0);
     }
 
     protected override void Dispose(bool disposing)

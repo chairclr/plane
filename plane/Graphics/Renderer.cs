@@ -111,7 +111,7 @@ public unsafe class Renderer : IDisposable
 
         string planeRootFolder = Path.GetDirectoryName(typeof(plane.Plane).Assembly.Location)!;
 
-        VertexShader = ShaderCompiler.CompileFromFile<VertexShader>(this,Path.Combine(planeRootFolder, "Shaders/VertexShader.hlsl"), "VSMain", ShaderModel.VertexShader5_0);
+        VertexShader = ShaderCompiler.CompileFromFile<VertexShader>(this, Path.Combine(planeRootFolder, "Shaders/VertexShader.hlsl"), "VSMain", ShaderModel.VertexShader5_0);
 
         InputElementDesc[] vertexLayout =
         {
@@ -120,7 +120,7 @@ public unsafe class Renderer : IDisposable
             new InputElementDesc((byte*)SilkMarshal.StringToPtr("NORMAL"),   0, Format.FormatR32G32B32Float, 0, D3D11.AppendAlignedElement, InputClassification.PerVertexData),
         };
 
-        VertexShader.SetInputLayout(this, vertexLayout);
+        VertexShader.SetInputLayout(vertexLayout);
 
         PixelShader = ShaderCompiler.CompileFromFile<PixelShader>(this, Path.Combine(planeRootFolder, "Shaders/PixelShader.hlsl"), "PSMain", ShaderModel.PixelShader5_0);
 
@@ -176,8 +176,8 @@ public unsafe class Renderer : IDisposable
 
         PixelShaderSampler.Bind(0, BindTo.PixelShader);
 
-        VertexShader!.Bind(this);
-        PixelShader!.Bind(this);
+        VertexShader!.Bind();
+        PixelShader!.Bind();
 
         PixelShaderBuffer.Data.TimeElapsed += 1f / 144f;
 
@@ -203,12 +203,12 @@ public unsafe class Renderer : IDisposable
         uint numThreadsX = (uint)MathF.Ceiling((float)Window.Size.X / 32f);
         uint numThreadsY = (uint)MathF.Ceiling((float)Window.Size.Y / 32f);
 
-        PostProcessComputeShaderX!.Bind(this);
+        PostProcessComputeShaderX!.Bind();
         Context.Dispatch(numThreadsX, numThreadsY, 1);
 
         Context.CopyResource(PostProcessBackBuffer1!.NativeTexture, PostProcessBackBuffer2!.NativeTexture);
 
-        PostProcessComputeShaderY!.Bind(this);
+        PostProcessComputeShaderY!.Bind();
         Context.Dispatch(numThreadsX, numThreadsY, 1);
     }
 

@@ -4,11 +4,18 @@ namespace plane.Graphics.Shaders;
 
 public abstract class Shader : IDisposable
 {
+    protected readonly Renderer Renderer;
+
     internal Blob ShaderData = new Blob();
 
-    internal abstract void Create(Renderer renderer);
+    public Shader(Renderer renderer)
+    {
+        Renderer = renderer;
+    }
 
-    public abstract void Bind(Renderer renderer);
+    internal abstract void Create();
+
+    public abstract void Bind();
 
     public void Dispose()
     {

@@ -8,14 +8,20 @@ public class DomainShader : Shader, IDisposable
 {
     internal ComPtr<ID3D11DomainShader> NativeShader = default;
 
-    internal unsafe override void Create(Renderer renderer)
+    public DomainShader(Renderer renderer) 
+        : base(renderer)
     {
-        SilkMarshal.ThrowHResult(renderer.Device.CreateDomainShader(ShaderData.BufferPointer, ShaderData.Size, ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
+
     }
 
-    public unsafe override void Bind(Renderer renderer)
+    internal unsafe override void Create()
     {
-        renderer.Context.DSSetShader(NativeShader, null, 0);
+        SilkMarshal.ThrowHResult(Renderer.Device.CreateDomainShader(ShaderData.BufferPointer, ShaderData.Size, ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
+    }
+
+    public unsafe override void Bind()
+    {
+        Renderer.Context.DSSetShader(NativeShader, null, 0);
     }
 
     protected override void Dispose(bool disposing)

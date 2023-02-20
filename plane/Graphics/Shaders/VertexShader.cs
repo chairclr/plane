@@ -8,21 +8,28 @@ namespace plane.Graphics.Shaders;
 public class VertexShader : Shader, IDisposable
 {
     internal ComPtr<ID3D11VertexShader> NativeShader = default;
+
     internal ComPtr<ID3D11InputLayout> NativeInputLayout = default;
 
-    internal unsafe override void Create(Renderer renderer)
+    public VertexShader(Renderer renderer) 
+        : base(renderer)
     {
-        SilkMarshal.ThrowHResult(renderer.Device.CreateVertexShader(ShaderData.BufferPointer, ShaderData.Size, ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
+
     }
 
-    internal unsafe void SetInputLayout(Renderer renderer, ReadOnlySpan<InputElementDesc> inputLayout)
+    internal unsafe override void Create()
     {
-        SilkMarshal.ThrowHResult(renderer.Device.CreateInputLayout(inputLayout[0], (uint)inputLayout.Length, ShaderData.BufferPointer, ShaderData.Size, ref NativeInputLayout));
+        SilkMarshal.ThrowHResult(Renderer.Device.CreateVertexShader(ShaderData.BufferPointer, ShaderData.Size, ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
     }
 
-    public unsafe override void Bind(Renderer renderer)
+    internal unsafe void SetInputLayout(ReadOnlySpan<InputElementDesc> inputLayout)
     {
-        renderer.Context.VSSetShader(NativeShader, null, 0);
+        SilkMarshal.ThrowHResult(Renderer.Device.CreateInputLayout(inputLayout[0], (uint)inputLayout.Length, ShaderData.BufferPointer, ShaderData.Size, ref NativeInputLayout));
+    }
+
+    public unsafe override void Bind()
+    {
+        Renderer.Context.VSSetShader(NativeShader, null, 0);
     }
 
     protected override void Dispose(bool disposing)
