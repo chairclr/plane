@@ -5,8 +5,8 @@ namespace plane.Graphics;
 [StructAlign16]
 public partial struct VertexShaderBuffer
 {
-    public Matrix4x4 ViewProjection; // 64 bytes
-    public Matrix4x4 World; // 128 bytes
+    public Matrix4x4 ViewProjection;
+    public Matrix4x4 World;
 }
 
 [StructAlign16]
