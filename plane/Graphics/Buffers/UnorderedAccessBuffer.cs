@@ -76,4 +76,14 @@ public unsafe class UnorderedAccessBuffer<T> : Buffer, IDisposable
     {
         Renderer.Context.CSSetUnorderedAccessViews((uint)slot, 1, ref _unorderedAccessView, (uint*)null);
     }
+
+    public override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (disposing)
+        {
+            UnorderedAccessView.Dispose();
+        }
+    }
 }

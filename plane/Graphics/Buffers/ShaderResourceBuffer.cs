@@ -98,4 +98,14 @@ public unsafe class ShaderResourceBuffer<T> : Buffer, IDisposable
                 throw new ArgumentException($"Invalid binding target {to}.", nameof(to));
         }
     }
+
+    public override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (disposing)
+        {
+            ShaderResourceView.Dispose();
+        }
+    }
 }
