@@ -70,7 +70,7 @@ public abstract class Plane : IDisposable
 
         Renderer = new Renderer(Window);
 
-        Renderer.ImGuiRenderCallback += RenderImGui;
+        //Renderer.ImGuiRenderCallback += RenderImGui;
 
         Load();
     }
@@ -104,7 +104,7 @@ public abstract class Plane : IDisposable
 
     private void Resize()
     {
-        Renderer?.Resize();
+        //Renderer?.Resize();
     }
 
     public void Dispose()

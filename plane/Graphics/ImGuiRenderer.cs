@@ -21,7 +21,7 @@ public class ImGuiRenderer : IDisposable
         ImGui.CreateContext();
 
         Logger.WriteLine("Create ImGuiRenderer: Init");
-        ImGuiNative.ImGui_ImplDX11_Init((nint)Renderer.Device.Handle, (nint)Renderer.Context.Handle);
+        ImGuiNative.ImGui_ImplDX11_Init((nint)Renderer.Device.Handle, (nint)0);
         ImGuiNative.ImGui_ImplSDL2_InitForD3D(Renderer.Window.Native!.Sdl!.Value);
 
         SdlProvider.SDL.Value.AddEventWatch(new PfnEventFilter((x, y) =>

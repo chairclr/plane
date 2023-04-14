@@ -1,5 +1,5 @@
 ﻿using Silk.NET.Core.Native;
-using Silk.NET.Direct3D11;
+using Silk.NET.Direct3D12;
 
 namespace plane.Diagnostics;
 
@@ -24,7 +24,6 @@ public class D3DDebugMessage
 
         LogSeverity = Severity switch
         {
-            MessageSeverity.None => LogSeverity.Info,
             MessageSeverity.Info => LogSeverity.Info,
             MessageSeverity.Message => LogSeverity.Info,
             MessageSeverity.Warning => LogSeverity.Warning,

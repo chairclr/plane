@@ -4,7 +4,7 @@ using Silk.NET.Core.Native;
 
 namespace plane.Graphics.Shaders;
 
-public class ShaderCompiler
+public class ShaderCompiler : D3DCompilerProvider
 {
     public const uint SHADER_DEBUG = (1 << 0);
     public const uint SHADER_SKIP_VALIDATION = (1 << 1);
@@ -51,7 +51,7 @@ public class ShaderCompiler
 
         nint nativeSourceString = SilkMarshal.StringToPtr(src);
 
-        int hr = D3DCompilerProvider.D3DCompiler.Value.Compile((void*)nativeSourceString, (nuint)src.Length, Path.GetFullPath(path), null, (ID3DInclude*)1, entryPoint, shaderModel, flags, 0, shader.ShaderData.NativeBlob.GetAddressOf(), shaderErrors.NativeBlob.GetAddressOf());
+        int hr = D3DCompiler.Compile((void*)nativeSourceString, (nuint)src.Length, Path.GetFullPath(path), null, (ID3DInclude*)1, entryPoint, shaderModel, flags, 0, shader.ShaderData.NativeBlob.GetAddressOf(), shaderErrors.NativeBlob.GetAddressOf());
 
         SilkMarshal.FreeString(nativeSourceString);
 
@@ -77,7 +77,7 @@ public class ShaderCompiler
 
         nint nativeSourceString = SilkMarshal.StringToPtr(src);
 
-        int hr = D3DCompilerProvider.D3DCompiler.Value.Compile((void*)nativeSourceString, (nuint)src.Length, (string?)null, null, null, entryPoint, shaderModel, flags, 0, shader.ShaderData.NativeBlob.GetAddressOf(), shaderErrors.NativeBlob.GetAddressOf());
+        int hr = D3DCompiler.Compile((void*)nativeSourceString, (nuint)src.Length, (string?)null, null, null, entryPoint, shaderModel, flags, 0, shader.ShaderData.NativeBlob.GetAddressOf(), shaderErrors.NativeBlob.GetAddressOf());
 
         SilkMarshal.FreeString(nativeSourceString);
 

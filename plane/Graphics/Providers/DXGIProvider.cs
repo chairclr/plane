@@ -4,10 +4,12 @@ namespace plane.Graphics.Providers;
 
 public class DXGIProvider
 {
-    public static Lazy<DXGI> DXGI { get; private set; }
+    public static DXGI DXGI { get; private set; }
 
     static DXGIProvider()
     {
-        DXGI = new Lazy<DXGI>(() => Silk.NET.DXGI.DXGI.GetApi());
+#pragma warning disable CS0618 // Type or member is obsolete
+        DXGI = DXGI.GetApi();
+#pragma warning restore CS0618
     }
 }
