@@ -8,7 +8,7 @@ public class VertexShader : Shader, IDisposable
 {
     internal ComPtr<ID3D11VertexShader> NativeShader = default;
 
-    internal ComPtr<ID3D11InputLayout> NativeInputLayout = default;
+    public ComPtr<ID3D11InputLayout> NativeInputLayout = default;
 
     public VertexShader(Renderer renderer)
         : base(renderer)
