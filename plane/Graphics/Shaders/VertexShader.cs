@@ -21,7 +21,7 @@ public class VertexShader : Shader, IDisposable
         SilkMarshal.ThrowHResult(Renderer.Device.CreateVertexShader(ShaderData.BufferPointer, ShaderData.Size, ref Unsafe.NullRef<ID3D11ClassLinkage>(), ref NativeShader));
     }
 
-    internal unsafe void SetInputLayout(ReadOnlySpan<InputElementDesc> inputLayout)
+    public unsafe void SetInputLayout(ReadOnlySpan<InputElementDesc> inputLayout)
     {
         SilkMarshal.ThrowHResult(Renderer.Device.CreateInputLayout(inputLayout[0], (uint)inputLayout.Length, ShaderData.BufferPointer, ShaderData.Size, ref NativeInputLayout));
     }
